@@ -54,15 +54,19 @@ class MainWindow(QtGui.QMainWindow):
         ##
         # @brief Reference update plot timer
         # Qt4 timer to trigger the @updatePlot function
-        self.timer = QtCore.QTimer(self)
+        self.timer_plot_update = QtCore.QTimer(self)
+
+        self.timer_freq_update = QtCore.QTimer(self)
 
         # Qt signals and slots
         QtCore.QObject.connect(self.ui.pButton_Start,
                                QtCore.SIGNAL('clicked()'), self.start)
         QtCore.QObject.connect(self.ui.pButton_Stop,
                                QtCore.SIGNAL('clicked()'), self.stop)
-        QtCore.QObject.connect(self.timer,
+        QtCore.QObject.connect(self.timer_plot_update,
                                QtCore.SIGNAL('timeout()'), self.update_plot)
+        QtCore.QObject.connect(self.timer_freq_update,
+                               QtCore.SIGNAL('timeout()'), self.update_freq)
 
         # Configure UI
         ports = getSerialPorts()
@@ -81,7 +85,7 @@ class MainWindow(QtGui.QMainWindow):
         self.set_ui_locked(False)
 
         # Configure plots
-        # self.configurePlot(self.ui.plt1, "Euler Angles", "degree", [-180, 180])
+        self.configure_plot(self.plt1, "Volts", "V", [0, 5])
 
     ##
     # @brief Start SerialProcess for data acquisition
@@ -107,7 +111,8 @@ class MainWindow(QtGui.QMainWindow):
                 self.ui.statusbar.showMessage("Acquiring data")
             # start data process, lock the ui and set plot update time
             self.set_ui_locked(True)
-            self.timer.start(PLOT_UPDATE_TIME)
+            self.timer_plot_update.start(PLOT_UPDATE_TIME)
+            self.timer_freq_update.start(PLOT_UPDATE_TIME*10)
 
     ##
     # @brief Updates graphs and writes to CSV files if enabled
@@ -125,13 +130,18 @@ class MainWindow(QtGui.QMainWindow):
         self.plt1.clear()
         self.plt1.plot(x=list(self.TIME)[-PLOT_UPDATE_POINTS:], y=list(self.DATA0)[-PLOT_UPDATE_POINTS:], pen='r')
 
+    def update_freq(self):
+        # Show adquisition frequency
+        self.ui.statusbar.showMessage("Sampling at " + str(1/(self.TIME[-1] - self.TIME[-2])) + " Hz")
+
     ##
     # @brief Stops SerialProcess for data acquisition
     # @param self Object handler
     def stop(self):
         self.data.closePort()
         self.data.join()
-        self.timer.stop()
+        self.timer_plot_update.stop()
+        self.timer_freq_update.stop()
         self.set_ui_locked(False)
         self.reset_buffers()
         self.ui.statusbar.showMessage("Stopped data acquisition")
@@ -146,9 +156,8 @@ class MainWindow(QtGui.QMainWindow):
     def configure_plot(self, plot, title, unit, plot_range=[0, 0]):
         plot.setLabel('left', title, unit)
         plot.setLabel('bottom', 'Time', 's')
-        # plot.showGrid(x=True, y=True)
         plot.showGrid(x=False, y=True)
-        if plot_range[0] != 0 and plot_range[1] != 0:
+        if plot_range[0] != plot_range[1]:
             plot.setYRange(plot_range[0], plot_range[1])
         plot.setMouseEnabled(x=False, y=False)
 
