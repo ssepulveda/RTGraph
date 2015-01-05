@@ -44,12 +44,12 @@ class MainWindow(QtGui.QMainWindow):
         self.plt1 = self.ui.plt.addPlot(row=1, col=1)
 
         # Variables
-        self.reset_buffers()
         self.queue = Queue(WINDOW)
         self.data = None
         self.csv = None
-        self.DATA0 = []
-        self.TIME = []
+        self.DATA0 = deque([], maxlen=WINDOW)
+        self.TIME = deque([], maxlen=WINDOW)
+        self.reset_buffers()
 
         ##
         # @brief Reference update plot timer
@@ -116,8 +116,8 @@ class MainWindow(QtGui.QMainWindow):
     # @param data New data to be appended
     def update_buffer(self, buffer_, data):
         buffer_.append(data)
-        if len(buffer_) > WINDOW:
-            buffer_.pop(0)
+        # if len(buffer_) > WINDOW:
+        #    buffer_.pop(0)
 
     ##
     # @brief Updates graphs and writes to CSV files if enabled
@@ -133,7 +133,7 @@ class MainWindow(QtGui.QMainWindow):
                 self.csv.csvWrite(data)
         # Draw new data
         self.plt1.clear()
-        self.plt1.plot(x=self.TIME[-PUS:], y=self.DATA0[-PUS:], pen='r')
+        self.plt1.plot(x=list(self.TIME)[-PUS:], y=list(self.DATA0)[-PUS:], pen='r')
 
     ##
     # @brief Stops SerialProcess for data acquisition
@@ -177,8 +177,8 @@ class MainWindow(QtGui.QMainWindow):
     # @brief Clears the buffers
     # @param self Object handler
     def reset_buffers(self):
-        self.DATA0 = []
-        self.TIME = []
+        self.DATA0.clear()
+        self.TIME.clear()
 
     ##
     # @brief Function to be executed while closing the main window
