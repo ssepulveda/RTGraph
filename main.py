@@ -110,24 +110,14 @@ class MainWindow(QtGui.QMainWindow):
             self.timer.start(PLOT_UPDATE_TIME)
 
     ##
-    # @brief Updates buffer values, removing old ones
-    # @param self Object handler
-    # @param buffer_ Buffer to be updated
-    # @param data New data to be appended
-    def update_buffer(self, buffer_, data):
-        buffer_.append(data)
-        # if len(buffer_) > WINDOW:
-        #    buffer_.pop(0)
-
-    ##
     # @brief Updates graphs and writes to CSV files if enabled
     # @param self Object handler
     def update_plot(self):
         # Get new data from buffer
         while self.queue.qsize() != 0:
             data = self.queue.get(True, 1)
-            self.update_buffer(self.TIME, data[0])
-            self.update_buffer(self.DATA0, data[1])
+            self.TIME.append(data[0])
+            self.DATA0.append(data[1])
             # If enabled, write to log file
             if self.ui.chBox_export.isChecked():
                 self.csv.csvWrite(data)
