@@ -10,13 +10,13 @@ from log import Log
 
 ##
 # @brief Buffer size for the data (number of points in the plot)
-WINDOW = 1024
+N_SAMPLES = 1024
 ##
 # @brief Update time of the plot, in ms
 PLOT_UPDATE_TIME = 10
 ##
 # @brief Point to update in each redraw
-PUS = -100
+PLOT_UPDATE_POINTS = -100
 
 
 ##
@@ -44,11 +44,11 @@ class MainWindow(QtGui.QMainWindow):
         self.plt1 = self.ui.plt.addPlot(row=1, col=1)
 
         # Variables
-        self.queue = Queue(WINDOW)
+        self.queue = Queue(N_SAMPLES)
         self.data = None
         self.csv = None
-        self.DATA0 = deque([], maxlen=WINDOW)
-        self.TIME = deque([], maxlen=WINDOW)
+        self.DATA0 = deque([], maxlen=N_SAMPLES)
+        self.TIME = deque([], maxlen=N_SAMPLES)
         self.reset_buffers()
 
         ##
@@ -123,7 +123,7 @@ class MainWindow(QtGui.QMainWindow):
                 self.csv.csvWrite(data)
         # Draw new data
         self.plt1.clear()
-        self.plt1.plot(x=list(self.TIME)[-PUS:], y=list(self.DATA0)[-PUS:], pen='r')
+        self.plt1.plot(x=list(self.TIME)[-PLOT_UPDATE_POINTS:], y=list(self.DATA0)[-PLOT_UPDATE_POINTS:], pen='r')
 
     ##
     # @brief Stops SerialProcess for data acquisition
@@ -134,7 +134,7 @@ class MainWindow(QtGui.QMainWindow):
         self.timer.stop()
         self.set_ui_locked(False)
         self.reset_buffers()
-        self.ui.statusbar.showMessage("Stopped data adquisition")
+        self.ui.statusbar.showMessage("Stopped data acquisition")
 
     ##
     # @brief Basic configurations for a plot
