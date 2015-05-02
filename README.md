@@ -25,7 +25,7 @@ The application uses mutliprocessing to allow better performance using different
 - Open a command window and install the missing dependencies, ```pip install pyserial numpy pyqtgraph```.
 
 #### Mac OS
-- See OS independent.
+- See [OS independent](https://github.com/ssepulveda/RTGraph#os-independent).
 
 #### OS independent
 - Download and install [Anaconda Scientific Python Distribution](https://store.continuum.io/cshop/anaconda/) for your OS/architecture.
