@@ -14,8 +14,8 @@ import csv
 #
 # @note The data is stored in a "data" folder (muest be created first)
 class CSVExport:
-    ## Constructor
-    #
+    ##
+    # @brief Constructor
     # Gets time to create the filename and instanciate the start of the
     # adquisition
     # @note The filename format is Year-Moth-Day_Hours-minutes-seconds.csv

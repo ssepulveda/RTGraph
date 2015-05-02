@@ -13,10 +13,10 @@ from log import Log
 N_SAMPLES = 1024
 ##
 # @brief Update time of the plot, in ms
-PLOT_UPDATE_TIME = 10
+PLOT_UPDATE_TIME = 30
 ##
 # @brief Point to update in each redraw
-PLOT_UPDATE_POINTS = -100
+PLOT_UPDATE_POINTS = -256
 
 
 ##
@@ -32,15 +32,9 @@ class MainWindow(QtGui.QMainWindow):
         self.ui = Ui_MainWindow()
         self.ui.setupUi(self)
 
-        try:
-            QtGui.QApplication.setGraphicsSystem('opengl')
-            self.ui.plt.setAntialiasing(True)
-        except:
-            log.i('Failed to use OpenGL for plotting')
-            raise
-            pass
-
         # Initializes plots
+        self.ui.plt.setBackground(background=None)
+        self.ui.plt.setAntialiasing(True)
         self.plt1 = self.ui.plt.addPlot(row=1, col=1)
 
         # Variables
@@ -72,7 +66,7 @@ class MainWindow(QtGui.QMainWindow):
         ports = getSerialPorts()
         if len(ports) <= 0:
             ans = QtGui.QMessageBox.question(self,
-                                             "No serial ports avaliable",
+                                             "No serial ports available",
                                              "Connect a serial device.\n" +
                                              "Scan again?",
                                              QtGui.QMessageBox.Yes,
@@ -81,11 +75,11 @@ class MainWindow(QtGui.QMainWindow):
                 ports = getSerialPorts()
         self.ui.cBox_Port.addItems(ports)
         self.ui.cBox_Speed.addItems(["9600", "57600", "115200"])
-        self.ui.cBox_Speed.setCurrentIndex(0)
+        self.ui.cBox_Speed.setCurrentIndex(2)
         self.set_ui_locked(False)
 
         # Configure plots
-        self.configure_plot(self.plt1, "Volts", "V", [0, 5])
+        self.configure_plot(self.plt1, "CSV1", "")
 
     ##
     # @brief Start SerialProcess for data acquisition
@@ -128,7 +122,7 @@ class MainWindow(QtGui.QMainWindow):
                 self.csv.csvWrite(data)
         # Draw new data
         self.plt1.clear()
-        self.plt1.plot(x=list(self.TIME)[-PLOT_UPDATE_POINTS:], y=list(self.DATA0)[-PLOT_UPDATE_POINTS:], pen='r')
+        self.plt1.plot(x=list(self.TIME)[-PLOT_UPDATE_POINTS:], y=list(self.DATA0)[-PLOT_UPDATE_POINTS:], pen='#2196F3')
 
     def update_freq(self):
         # Show adquisition frequency
@@ -153,12 +147,17 @@ class MainWindow(QtGui.QMainWindow):
     # @param title Title for the plot
     # @param unit Unit for the plot
     # @param plot_range List with min and max values to show in the plot
-    def configure_plot(self, plot, title, unit, plot_range=[0, 0]):
-        plot.setLabel('left', title, unit)
-        plot.setLabel('bottom', 'Time', 's')
+    @staticmethod
+    def configure_plot(plot, title, unit, y_min=0, y_max=0,
+                       label_color='#2196F3', label_size='11pt'):
+        label_style = {'color': label_color, 'font-size': label_size}
+        plot.setLabel('left', title, unit, **label_style)
+        plot.setLabel('bottom', 'Time', 's', **label_style)
         plot.showGrid(x=False, y=True)
-        if plot_range[0] != plot_range[1]:
-            plot.setYRange(plot_range[0], plot_range[1])
+        if y_min != y_max:
+            plot.setYRange(y_min, y_max)
+        else:
+            plot.enableAutoRange(axis=None, enable=True)
         plot.setMouseEnabled(x=False, y=False)
 
     ##
