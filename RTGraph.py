@@ -10,17 +10,24 @@ def main():
     result_queue = multiprocessing.Queue()
 
     sp = SerialProcess(result_queue)
-    sp.open_port("COM4")
-    sp.start()
-    value = result_queue.get(block=True, timeout=TIMEOUT)
-    count = 0
-    while count < 5:
-        if not result_queue.empty():
-            print(value)
-            value = result_queue.get(block=False)
-            count = value[1]
-    sp.stop()
-    sp.join()
+    ports = sp.get_ports()
+    if 0 < len(ports):
+        sp.open_port(ports[0])
+        if sp.is_port_avaliable(ports[0]):
+            sp.start()
+            value = result_queue.get(block=True, timeout=TIMEOUT)
+            count = 0
+            while count < 5:
+                if not result_queue.empty():
+                    print(value)
+                    value = result_queue.get(block=False)
+                    count = value[1]
+            sp.stop()
+            sp.join()
+        else:
+            log.info("Port is not available")
+    else:
+        log.warning("No ports detected")
 
 
 def start_logging():

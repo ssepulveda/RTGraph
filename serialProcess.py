@@ -1,6 +1,7 @@
 import multiprocessing
 import logging as log
 import serial
+from serial.tools import list_ports
 import time
 
 
@@ -13,10 +14,25 @@ class SerialProcess(multiprocessing.Process):
         log.info("SerialProcess ready")
 
     def list_ports(self):
-        return None
+        return list_ports.comports()
+
+    def get_ports(self):
+        ports = []
+        for port in self.list_ports():
+            ports.append(port[0])
+        return ports
+
+    def get_ports_full(self):
+        ports = []
+        for port in self.list_ports():
+            ports.append(port)
+        return ports
 
     def is_port_avaliable(self, port):
-        return True
+        for ports in self.list_ports():
+            if ports[0] == port:
+                return True
+        return False
 
     def open_port(self, port, bd=115200, timeout=0.5):
         self.s.port = port
@@ -27,22 +43,25 @@ class SerialProcess(multiprocessing.Process):
         return self.is_port_avaliable(self.s.port)
 
     def run(self):
-        if not self.s.isOpen():
-            self.s.open()
-            log.info("Port opened")
-            time.clock()
-            while not self.exit.is_set():
-                # http://eli.thegreenplace.net/2009/08/07/a-live-data-monitor-with-python-pyqt-and-pyserial/
-                data = self.s.read(1)
-                data += self.s.read(self.s.inWaiting())
-                if len(data) > 0:
-                    timestamp = time.clock()
-                    self.queue.put((data, timestamp))
-                log.debug(data)
-            log.info("SerialProcess finished")
-            self.s.close()
+        if self.is_port_avaliable(self.s.port):
+            if not self.s.isOpen():
+                self.s.open()
+                log.info("Port opened")
+                time.clock()
+                while not self.exit.is_set():
+                    # http://eli.thegreenplace.net/2009/08/07/a-live-data-monitor-with-python-pyqt-and-pyserial/
+                    data = self.s.read(1)
+                    data += self.s.read(self.s.inWaiting())
+                    if len(data) > 0:
+                        timestamp = time.clock()
+                        self.queue.put((data, timestamp))
+                    log.debug(data)
+                log.info("SerialProcess finished")
+                self.s.close()
+            else:
+                log.warning("Port is not opened")
         else:
-            log.warning("Port is not opened")
+            log.warning("Port is not available")
 
     def stop(self):
         log.info("SerialProcess finishing...")
