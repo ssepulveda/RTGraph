@@ -2,7 +2,6 @@ import multiprocessing
 import logging as log
 import serial
 from serial.tools import list_ports
-import time
 
 
 class SerialProcess(multiprocessing.Process):
@@ -48,14 +47,13 @@ class SerialProcess(multiprocessing.Process):
             if not self.s.isOpen():
                 self.s.open()
                 log.info("Port opened")
-                time.clock()
+                timestamp = time.time()
                 while not self.exit.is_set():
                     # http://eli.thegreenplace.net/2009/08/07/a-live-data-monitor-with-python-pyqt-and-pyserial/
                     data = self.s.read(1)
                     data += self.s.read(self.s.inWaiting())
                     if len(data) > 0:
-                        timestamp = time.clock()
-                        self.queue.put((data, timestamp))
+                        self.queue.put((data, (time.time() - timestamp)))
                     log.debug(data)
                 log.info("SerialProcess finished")
                 self.s.close()

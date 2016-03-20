@@ -23,7 +23,7 @@ def main():
                 if not result_queue.empty():
                     print(value)
                     value = result_queue.get(block=False)
-                    count = value[1] * 1000
+                    count = value[1]
             sp.stop()
             sp.join()
         else:
@@ -37,7 +37,6 @@ def start_logging():
     logger = log.getLogger()
     logger.setLevel(log.INFO)
 
-    # file_handler = log.FileHandler("RTGraph.log")
     file_handler = logging.handlers.RotatingFileHandler("RTGraph.log", maxBytes=1024, backupCount=3)
     file_handler.setFormatter(log_format)
     logger.addHandler(file_handler)
@@ -47,9 +46,14 @@ def start_logging():
     logger.addHandler(console_handler)
 
 
+def user_info():
+    log.info("Platform %s", sys.platform)
+
+
 if __name__ == '__main__':
     multiprocessing.freeze_support()
     start_logging()
+    user_info()
 
     log.info("Starting RTGraph")
     main()
