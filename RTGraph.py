@@ -1,6 +1,7 @@
 import multiprocessing
 import sys
 import logging as log
+import logging.handlers
 from serialProcess import SerialProcess
 
 TIMEOUT = 1000
@@ -22,7 +23,7 @@ def main():
                 if not result_queue.empty():
                     print(value)
                     value = result_queue.get(block=False)
-                    count = value[1]
+                    count = value[1] * 1000
             sp.stop()
             sp.join()
         else:
@@ -32,15 +33,16 @@ def main():
 
 
 def start_logging():
-    log_format = log.Formatter('%(asctime)s %(levelname)s %(message)s')
-    logger = log.getLogger('__name__')
+    log_format = log.Formatter('%(asctime)s,%(levelname)s,%(message)s')
+    logger = log.getLogger()
     logger.setLevel(log.INFO)
 
-    file_handler = log.FileHandler("RTGraph.log")
+    # file_handler = log.FileHandler("RTGraph.log")
+    file_handler = logging.handlers.RotatingFileHandler("RTGraph.log", maxBytes=1024, backupCount=3)
     file_handler.setFormatter(log_format)
     logger.addHandler(file_handler)
 
-    console_handler = log.StreamHandler()
+    console_handler = log.StreamHandler(sys.stdout)
     console_handler.setFormatter(log_format)
     logger.addHandler(console_handler)
 
