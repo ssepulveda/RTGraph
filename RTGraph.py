@@ -1,5 +1,6 @@
 import multiprocessing
 import sys
+import platform
 import logging as log
 import logging.handlers
 from serialProcess import SerialProcess
@@ -19,7 +20,7 @@ def main():
             sp.start()
             value = result_queue.get(block=True, timeout=TIMEOUT)
             count = 0
-            while count < 5:
+            while count < 1:
                 if not result_queue.empty():
                     print(value)
                     value = result_queue.get(block=False)
@@ -37,7 +38,7 @@ def start_logging():
     logger = log.getLogger()
     logger.setLevel(log.INFO)
 
-    file_handler = logging.handlers.RotatingFileHandler("RTGraph.log", maxBytes=1024, backupCount=3)
+    file_handler = logging.handlers.RotatingFileHandler("RTGraph.log", maxBytes=1024, backupCount=2)
     file_handler.setFormatter(log_format)
     logger.addHandler(file_handler)
 
@@ -47,7 +48,9 @@ def start_logging():
 
 
 def user_info():
-    log.info("Platform %s", sys.platform)
+    log.info("Platform: %s", platform.platform())
+    log.info("Path: %s", sys.path[0])
+    log.info("Python: %s", sys.version)
 
 
 if __name__ == '__main__':
