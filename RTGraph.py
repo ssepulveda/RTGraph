@@ -11,9 +11,10 @@ def main():
 
     sp = SerialProcess(result_queue)
     ports = sp.get_ports()
+    log.info(ports)
     if 0 < len(ports):
         sp.open_port(ports[0])
-        if sp.is_port_avaliable(ports[0]):
+        if sp.is_port_available(ports[0]):
             sp.start()
             value = result_queue.get(block=True, timeout=TIMEOUT)
             count = 0
@@ -32,7 +33,7 @@ def main():
 
 def start_logging():
     log_format = log.Formatter('%(asctime)s %(levelname)s %(message)s')
-    logger = log.getLogger()
+    logger = log.getLogger('__name__')
     logger.setLevel(log.INFO)
 
     file_handler = log.FileHandler("RTGraph.log")
