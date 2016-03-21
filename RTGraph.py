@@ -5,8 +5,16 @@ import logging as log
 import logging.handlers
 import argparse
 from serialProcess import SerialProcess
+from gui import *
 
 TIMEOUT = 1000
+
+
+class MainWindow(QtGui.QMainWindow):
+    def __init__(self):
+        QtGui.QMainWindow.__init__(self)
+        self.ui = Ui_MainWindow()
+        self.ui.setupUi(self)
 
 
 def main():
@@ -72,7 +80,14 @@ if __name__ == '__main__':
     user_info()
 
     log.info("Starting RTGraph")
-    main()
+
+    # main()
+
+    app = QtGui.QApplication(sys.argv)
+    myapp = MainWindow()
+    myapp.show()
+    app.exec_()
+
     log.info("Finishing RTGraph")
     log.shutdown()
     sys.exit()
