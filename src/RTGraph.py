@@ -101,7 +101,7 @@ def start_logging(level):
     logger = log.getLogger()
     logger.setLevel(level)
 
-    file_handler = logging.handlers.RotatingFileHandler("RTGraph.log", maxBytes=1024, backupCount=2)
+    file_handler = logging.handlers.RotatingFileHandler("RTGraph.log", maxBytes=(10240 * 5), backupCount=2)
     file_handler.setFormatter(log_format)
     logger.addHandler(file_handler)
 
@@ -141,7 +141,7 @@ if __name__ == '__main__':
     win.show()
     app.exec()
 
-    log.info("Finishing RTGraph")
+    log.info("Finishing RTGraph\n")
     log.shutdown()
     win.close()
     app.exit()
