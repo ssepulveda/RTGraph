@@ -7,6 +7,7 @@ import argparse
 from serialProcess import SerialProcess
 from gui import *
 
+
 TIMEOUT = 1000
 
 
@@ -19,7 +20,6 @@ class MainWindow(QtGui.QMainWindow):
 
 def main():
     result_queue = multiprocessing.Queue()
-
     sp = SerialProcess(result_queue)
     ports = sp.get_ports()
     log.info(ports)
@@ -29,7 +29,7 @@ def main():
             sp.start()
             value = result_queue.get(block=True, timeout=TIMEOUT)
             count = 0
-            while count < 1:
+            while count < 5:
                 if not result_queue.empty():
                     value = result_queue.get(block=False)
                     count = value[1]
@@ -82,12 +82,13 @@ if __name__ == '__main__':
     log.info("Starting RTGraph")
 
     # main()
-
     app = QtGui.QApplication(sys.argv)
-    myapp = MainWindow()
-    myapp.show()
-    app.exec_()
+    win = MainWindow()
+    win.show()
+    app.exec()
 
     log.info("Finishing RTGraph")
     log.shutdown()
+    win.close()
+    app.exit()
     sys.exit()
