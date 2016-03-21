@@ -50,7 +50,9 @@ class SerialProcess(multiprocessing.Process):
                 log.info("Port opened")
                 timestamp = time()
                 while not self.exit.is_set():
-                    # http://eli.thegreenplace.net/2009/08/07/a-live-data-monitor-with-python-pyqt-and-pyserial/
+                    """
+                    http://eli.thegreenplace.net/2009/08/07/a-live-data-monitor-with-python-pyqt-and-pyserial/
+                    """
                     data = self.s.read(1)
                     data += self.s.read(self.s.inWaiting())
                     if len(data) > 0:
