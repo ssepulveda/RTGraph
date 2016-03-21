@@ -3,6 +3,7 @@ import sys
 import platform
 import logging as log
 import logging.handlers
+import argparse
 from serialProcess import SerialProcess
 
 TIMEOUT = 1000
@@ -22,7 +23,6 @@ def main():
             count = 0
             while count < 1:
                 if not result_queue.empty():
-                    print(value)
                     value = result_queue.get(block=False)
                     count = value[1]
             sp.stop()
@@ -33,10 +33,10 @@ def main():
         log.warning("No ports detected")
 
 
-def start_logging():
+def start_logging(level):
     log_format = log.Formatter('%(asctime)s,%(levelname)s,%(message)s')
     logger = log.getLogger()
-    logger.setLevel(log.INFO)
+    logger.setLevel(level)
 
     file_handler = logging.handlers.RotatingFileHandler("RTGraph.log", maxBytes=1024, backupCount=2)
     file_handler.setFormatter(log_format)
@@ -50,15 +50,29 @@ def start_logging():
 def user_info():
     log.info("Platform: %s", platform.platform())
     log.info("Path: %s", sys.path[0])
-    log.info("Python: %s", sys.version)
+    log.info("Python: %s", sys.version[0:5])
+
+
+def man():
+    parser = argparse.ArgumentParser(description='RTGraph\nA real time plotting and logging application')
+    parser.add_argument("-l", "--log",
+                        dest="logLevel",
+                        choices=['DEBUG', 'INFO', 'WARNING', 'ERROR', 'CRITICAL'],
+                        help="Set the logging level")
+    return parser
 
 
 if __name__ == '__main__':
     multiprocessing.freeze_support()
-    start_logging()
+    args = man().parse_args()
+    if args.logLevel:
+        start_logging(args.logLevel)
+    else:
+        start_logging(log.INFO)
     user_info()
 
     log.info("Starting RTGraph")
     main()
     log.info("Finishing RTGraph")
+    log.shutdown()
     sys.exit()
