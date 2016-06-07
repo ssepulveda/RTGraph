@@ -41,9 +41,12 @@ class MainWindow(QtGui.QMainWindow):
     def configure_plot(self):
         self.ui.plt.setBackground(background=None)
         self.ui.plt.setAntialiasing(True)
-        self.plt1 = self.ui.plt.addPlot(row=1, col=1)
+        self.plt1 = self.ui.plt.addPlot()
         self.img = pg.ImageItem()
+        self.hist = pg.HistogramLUTItem()
+        self.hist.setImageItem(self.img)
         self.plt1.addItem(self.img)
+        self.ui.plt.addItem(self.hist)
 
 
     def configure_timers(self):
@@ -83,7 +86,7 @@ class MainWindow(QtGui.QMainWindow):
     
     def start(self):
         log.info("Clicked start (pipe)")
-        self.sp = PipeProcess(self.queue, )
+        self.sp = PipeProcess(self.queue, cmd="./fake_acq.py")
         self.sp.start()
         self.timer_plot_update.start(10)
             
