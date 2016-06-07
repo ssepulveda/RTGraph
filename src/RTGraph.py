@@ -75,7 +75,7 @@ class MainWindow(QtGui.QMainWindow):
 
     def start(self):
         log.info("Clicked start")
-        self.sp = SerialProcess(self.queue)
+        self.sp = SerialProcess(self.queue, simu=True)
         ports = self.sp.get_ports()
         log.info(ports)
         if 0 < len(ports):

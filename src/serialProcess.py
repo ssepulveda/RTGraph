@@ -2,15 +2,19 @@ import multiprocessing
 import logging as log
 import serial
 from serial.tools import list_ports
-from time import time
-
+import time
+import random
 
 class SerialProcess(multiprocessing.Process):
-    def __init__(self, result_queue):
+    def __init__(self, result_queue, simu=False):
+        self.simu = simu
         self.queue = result_queue
         multiprocessing.Process.__init__(self)
         self.exit = multiprocessing.Event()
-        self.s = serial.Serial()
+        if simu:
+            self.s = None
+        else:
+            self.s = serial.Serial()
         log.info("SerialProcess ready")
 
     @staticmethod
@@ -36,6 +40,7 @@ class SerialProcess(multiprocessing.Process):
         return False
 
     def open_port(self, port, bd=115200, timeout=0.5):
+        if self.simu: return True
         self.s.port = port
         self.s.baudrate = bd
         self.s.stopbits = serial.STOPBITS_ONE
@@ -43,12 +48,22 @@ class SerialProcess(multiprocessing.Process):
         self.s.timeout = timeout
         return self.is_port_available(self.s.port)
 
+    # Run is started in the new process
     def run(self):
+        timestamp = time.time()
+        if self.simu:
+            # Send fake data
+            freq = 100. # Hz
+            while not self.exit.is_set():
+                self.queue.put(("0,{}".format(random.randint(0,0xFF)), 
+                            time.time() - timestamp))
+                time.sleep(1 / freq)
+            return
         if self.is_port_available(self.s.port):
             if not self.s.isOpen():
                 self.s.open()
                 log.info("Port opened")
-                timestamp = time()
+                
                 while not self.exit.is_set():
                     """
                     http://eli.thegreenplace.net/2009/08/07/a-live-data-monitor-with-python-pyqt-and-pyserial/
@@ -56,7 +71,7 @@ class SerialProcess(multiprocessing.Process):
                     data = self.s.read(1)
                     data += self.s.read(self.s.inWaiting())
                     if len(data) > 0:
-                        self.queue.put((data, (time() - timestamp)))
+                        self.queue.put((data, (time.time() - timestamp)))
                     log.debug(data)
                 log.info("SerialProcess finished")
                 self.s.close()
