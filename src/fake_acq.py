@@ -15,7 +15,7 @@ followed by 512 uint16 (2 bytes each), therefore ~ 1 kByte per line.
 if __name__ == "__main__":
     N =  512 # Sensor number
     max_val = 2**16 - 1
-    freq = 100. # Hz
+    freq = 1000. # Hz
     while 1:
         print("{}\t".format(int(time.time())), end=""),
         for _ in range(N):

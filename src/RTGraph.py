@@ -1,5 +1,6 @@
 import multiprocessing
 import sys
+import time
 import platform
 import pyqtgraph as pg
 import numpy as np
@@ -56,20 +57,23 @@ class MainWindow(QtGui.QMainWindow):
     def configure_signals(self):
         self.ui.pButton_Start.clicked.connect(self.start)
         self.ui.pButton_Stop.clicked.connect(self.stop)
+        self.ui.numIntSpinBox.valueChanged.connect(self.reset_buffers)
     
     def reset_buffers(self):
-            self.data = RingBuffer2D(SAMPLES)
+            self.data = RingBuffer2D(self.ui.numIntSpinBox.value())
             self.time = RingBuffer2D(1) # Unused at the moment
             while not self.queue.empty():
                 self.queue.get()
             log.info("Buffers cleared")
 
     def update_plot(self):
-        log.debug("Updating plot")
         values = []
         # Just for debugging purpose: approx. queue size
-        print("Queue size: {}".format(self.queue.qsize()))
+        #print("Queue size: {}".format(self.queue.qsize()))
+        tt = time.time()
+        kk = 0
         while not self.queue.empty():
+            kk+=1
             data = self.queue.get(False)
             # data is a list(time, [array,of,values])
             ts = data[0]
@@ -78,15 +82,22 @@ class MainWindow(QtGui.QMainWindow):
             self.data.append(values)
             self.time.append(ts)
         #print(self.data.get_all())
+        
+        #print("Poped {} values".format(kk))
         if values:
-            # Last value (empty queue)
-            #self.img.setImage(np.array(values).reshape(16,32))
+            if self.ui.intCheckBox.isChecked():
+                self.img.setImage(np.sum(self.data.get_all(), axis=0).reshape(16,32))
+            else:
+                # Last value (empty queue)
+                self.img.setImage(np.array(values).reshape(16,32))
             # or integration (once the queue is empty)
-            self.img.setImage(np.sum(self.data.get_all(), axis=0).reshape(16,32))
+            
+            nt = time.time()
+            #print("Framerate: {} fps".format(1 / (nt - tt)))
     
     def start(self):
         log.info("Clicked start (pipe)")
-        self.sp = PipeProcess(self.queue, cmd="./fake_acq.py")
+        self.sp = PipeProcess(self.queue, cmd=self.ui.cmdLineEdit.text())#"./fake_acq.py")
         self.sp.start()
         self.timer_plot_update.start(10)
             
