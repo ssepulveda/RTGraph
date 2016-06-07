@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>704</width>
-    <height>558</height>
+    <width>786</width>
+    <height>579</height>
    </rect>
   </property>
   <property name="minimumSize">
@@ -384,30 +384,6 @@ QStatusBar {
          </widget>
         </item>
        </layout>
-      </item>
-     </layout>
-    </item>
-    <item row="9" column="1">
-     <layout class="QGridLayout" name="Layout_controls2">
-      <item row="0" column="1">
-       <spacer name="horizontalSpacer">
-        <property name="orientation">
-         <enum>Qt::Horizontal</enum>
-        </property>
-        <property name="sizeHint" stdset="0">
-         <size>
-          <width>40</width>
-          <height>20</height>
-         </size>
-        </property>
-       </spacer>
-      </item>
-      <item row="0" column="0">
-       <widget class="QCheckBox" name="chBox_export">
-        <property name="text">
-         <string>Export to CSV</string>
-        </property>
-       </widget>
       </item>
      </layout>
     </item>
