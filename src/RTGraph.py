@@ -27,6 +27,18 @@ class AcqProcessing:
         # size = N_uplinks_per_USB * N_channels_per_uplink
         self.num_sensors = 8*1 # for VATA64 front-end
     
+    def parse_queue_item(self, line):
+        # Here retrieve the line pushed to the queue
+        # and properly parse it to return 
+        # several values such as ID, time, [list of vals]
+        pass
+    
+    def set_sensor_id(self, num, x_pos, y_pos):
+        # Think about a good datastructure to do this.
+        # Perhaps tuples (num, x_pos, y_pos) for each sensor
+        # then merged to 1D arrays of x_pos, y_pos, nums
+        pass
+    
     def set_num_sensors(self, value):
         self.num_sensors = value
     
