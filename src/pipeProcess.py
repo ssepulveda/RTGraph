@@ -6,7 +6,7 @@ import subprocess
 
 class PipeProcess(multiprocessing.Process):
     def __init__(self, result_queue,
-                 cmd="./fake_acq.py", args=""):
+                 cmd="./fake_acq.py", args=[]):
         self.queue = result_queue
         multiprocessing.Process.__init__(self)
         self.exit = multiprocessing.Event()
@@ -17,7 +17,7 @@ class PipeProcess(multiprocessing.Process):
     # Run is started in the new process
     def run(self):
         timestamp = time.time()
-        proc = subprocess.Popen([self.cmd, self.args], stdout=subprocess.PIPE)
+        proc = subprocess.Popen([self.cmd,  ] + self.args, stdout=subprocess.PIPE)
         for line in io.TextIOWrapper(proc.stdout, encoding="utf-8"):
             if self.exit.is_set():
                 proc.terminate()

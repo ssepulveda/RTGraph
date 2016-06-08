@@ -2,6 +2,7 @@
 
 import random
 import time
+import sys
 """
 Fake data acquisition. 
 Returns a timestamp followed by 512 uint16 values
@@ -13,7 +14,10 @@ followed by 512 uint16 (2 bytes each), therefore ~ 1 kByte per line.
 """
 
 if __name__ == "__main__":
-    N =  512 # Sensor number
+    if len(sys.argv) > 1:
+        N = int(sys.argv[1])
+    else:
+        N =  512 # Sensor number
     max_val = 2**16 - 1
     freq = 500. # Hz
     while 1:

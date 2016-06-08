@@ -70,8 +70,17 @@ class MainWindow(QtGui.QMainWindow):
         self.ui.numIntSpinBox.valueChanged.connect(self.reset_buffers)
     
     def reset_buffers(self):
-            self.data = RingBuffer2D(self.ui.numIntSpinBox.value())
-            self.time = RingBuffer2D(1) # Unused at the moment
+            # First argument of the fake_acq command is the number of
+            # cols
+            cmdargs = self.ui.cmdLineEdit.text().split(' ')
+            if len(cmdargs) > 1:
+                cols = int(cmdargs[1])
+            else:
+                cols = 512
+            print("DEBUG: using {} cols".format(cols))
+            self.data = RingBuffer2D(self.ui.numIntSpinBox.value(),
+                                     cols=cols)
+            self.time = RingBuffer2D(1, cols=cols) # Unused at the moment
             while not self.queue.empty():
                 self.queue.get()
             log.info("Buffers cleared")
@@ -97,7 +106,8 @@ class MainWindow(QtGui.QMainWindow):
         if values:
             if self.ui.intCheckBox.isChecked():
                 int_data = np.sum(self.data.get_all(), axis=0)
-                self.img.setImage(int_data.reshape(16,32))
+                # FIXME reshape just to make it 2D
+                self.img.setImage(int_data.reshape(len(int_data),1))
                 intensity = int_data[self.sensor_ids] / (2**12*self.data.rows)
                 colors = [pg.intColor(200, alpha=k) for k in intensity/ np.max(intensity) * 100] 
                 self.scatt.setData(x=self.x_coords,
@@ -106,7 +116,7 @@ class MainWindow(QtGui.QMainWindow):
                                    brush=colors)
             else:
                 # Last value (empty queue)
-                self.img.setImage(np.array(values).reshape(16,32))
+                self.img.setImage(np.array(values).reshape((len(values), 1)))
                 intensity = np.array(values)[self.sensor_ids] / 2**12
                 colors = [pg.intColor(200, alpha=k) for k in intensity/ np.max(intensity) * 100] 
                 self.scatt.setData(x=self.x_coords,
@@ -121,15 +131,23 @@ class MainWindow(QtGui.QMainWindow):
     
     def start(self):
         log.info("Clicked start (pipe)")
+        # reset buffers to ensure they have an adequate size
+        self.reset_buffers()
         n_rows = 10
-        n_cols = 30
+        n_cols = 20
         # x coords: rows. 
-        self.x_coords = np.tile(np.arange(30), 10)
-        self.y_coords = np.repeat(np.arange(10), 30)
+        self.x_coords = np.tile(np.arange(n_rows), n_cols)
+        self.y_coords = np.repeat(np.arange(n_rows), n_cols)
         # corresponding sensor ids: say we use the first 300.
         self.sensor_ids = np.arange(n_rows * n_cols)
         
-        self.sp = PipeProcess(self.queue, cmd=self.ui.cmdLineEdit.text())
+        # Split command and args
+        cmdargs = self.ui.cmdLineEdit.text().split(' ')
+        cmd = cmdargs[0]
+        args = cmdargs[1:]
+        self.sp = PipeProcess(self.queue,
+                              cmd=cmd,
+                              args=args)
         self.sp.start()
         self.timer_plot_update.start(10)
 
