@@ -19,21 +19,63 @@ TIMEOUT = 1000
 SAMPLES = 100
 
 
-class MainWindow(QtGui.QMainWindow):
+
+class AcqProcessing:
     def __init__(self):
+        # USBBoard data format:
+        # ADC data is sent in an array of size
+        # size = N_uplinks_per_USB * N_channels_per_uplink
+        self.num_sensors = 8*1 # for VATA64 front-end
+        self.num_integrations = 100
+        
+        self.queue = multiprocessing.Queue()
+    
+    def parse_queue_item(self, line):
+        # Here retrieve the line pushed to the queue
+        # and properly parse it to return 
+        # several values such as ID, time, [list of vals]
+        pass
+    
+    def set_sensor_id(self, num, x_pos, y_pos):
+        # Think about a good datastructure to do this.
+        # Perhaps tuples (num, x_pos, y_pos) for each sensor
+        # then merged to 1D arrays of x_pos, y_pos, nums
+        pass
+    
+    def set_num_sensors(self, value):
+        self.num_sensors = value
+        
+    def reset_buffers(self):
+        self.data = RingBuffer2D(self.num_integrations,
+                                    cols=self.num_sensors)
+        self.time = RingBuffer2D(1,cols=1) # Unused at the moment (buffer size is 1)
+        self.evNumber = RingBuffer2D(1,cols=1) # Unused at the moment (buffer size is 1)            
+        while not self.queue.empty():
+            self.queue.get()
+        log.info("Buffers cleared")
+    
+
+
+class MainWindow(QtGui.QMainWindow):
+    def __init__(self, acq_proc):
         QtGui.QMainWindow.__init__(self)
         self.ui = Ui_MainWindow()
         self.ui.setupUi(self)
+        
+        # Know about an instance of acquisition/processing code
+        # to forward GUI events
+        self.acq_proc = acq_proc
 
         self.plt1 = None
         self.timer_plot_update = None
         self.timer_freq_update = None
         self.data = None
         self.time = None
+        self.evNumber = None
         self.sp = None
 
-        self.queue = multiprocessing.Queue()
-        self.reset_buffers()
+        self.queue = acq_proc.queue #multiprocessing.Queue()
+        self.acq_proc.reset_buffers()
 
         # configures
         self.configure_plot()
@@ -67,48 +109,39 @@ class MainWindow(QtGui.QMainWindow):
     def configure_signals(self):
         self.ui.pButton_Start.clicked.connect(self.start)
         self.ui.pButton_Stop.clicked.connect(self.stop)
-        self.ui.numIntSpinBox.valueChanged.connect(self.reset_buffers)
+        self.ui.numIntSpinBox.valueChanged.connect(self.acq_proc.reset_buffers)
+        self.ui.numSensorSpinBox.valueChanged.connect(self.update_num_sensors)
     
-    def reset_buffers(self):
-            # First argument of the fake_acq command is the number of
-            # cols
-            cmdargs = self.ui.cmdLineEdit.text().split(' ')
-            if len(cmdargs) > 1:
-                cols = int(cmdargs[1])
-            else:
-                cols = 512
-            print("DEBUG: using {} cols".format(cols))
-            self.data = RingBuffer2D(self.ui.numIntSpinBox.value(),
-                                     cols=cols)
-            self.time = RingBuffer2D(1, cols=cols) # Unused at the moment
-            while not self.queue.empty():
-                self.queue.get()
-            log.info("Buffers cleared")
+    
+
+    def update_num_sensors(self, value):
+        self.acq_proc.set_num_sensors(value)
 
     def update_plot(self):
         values = []
         # Just for debugging purpose: approx. queue size
-        print("Queue size: {}".format(self.queue.qsize()))
+        #print("Queue size: {}".format(self.queue.qsize()))
         tt = time.time()
         kk = 0
         while not self.queue.empty():
             kk+=1
             data = self.queue.get(False)
-            # data is a list(time, [array,of,values])
-            ts = data[0]
-            values = data[1]
-            #print(values)
-            self.data.append(values)
-            self.time.append(ts)
-        #print(self.data.get_all())
+            # acq_proc.data is a list(event number, time, [array,of,values])
+            eN = data[0]
+            ts = data[1]
+            values = data[2]
+            self.acq_proc.data.append(values)
+            self.acq_proc.time.append(ts)
+            self.acq_proc.evNumber.append(eN)
+        #print(self.acq_proc.data.get_all())
         
-        #print("Poped {} values".format(kk))
+        print("Poped {} values".format(kk))
         if values:
             if self.ui.intCheckBox.isChecked():
-                int_data = np.sum(self.data.get_all(), axis=0)
+                int_data = np.sum(self.acq_proc.data.get_all(), axis=0)
                 # FIXME reshape just to make it 2D
                 self.img.setImage(int_data.reshape(len(int_data),1))
-                intensity = int_data[self.sensor_ids] / (2**12*self.data.rows)
+                intensity = int_data[self.sensor_ids] / (2**12*self.acq_proc.data.rows)
                 colors = [pg.intColor(200, alpha=k) for k in intensity/ np.max(intensity) * 100] 
                 self.scatt.setData(x=self.x_coords,
                                    y=self.y_coords, 
@@ -127,27 +160,26 @@ class MainWindow(QtGui.QMainWindow):
             # or integration (once the queue is empty)
             
             nt = time.time()
-            print("Framerate: {} fps".format(1 / (nt - tt)))
+            #print("Framerate: {} fps".format(1 / (nt - tt)))
     
     def start(self):
         log.info("Clicked start (pipe)")
         # reset buffers to ensure they have an adequate size
-        self.reset_buffers()
-        n_rows = 10
-        n_cols = 20
+        self.acq_proc.reset_buffers()
+        # TODO Fix this temporary geometry
+        n_rows = 2
+        n_cols = self.acq_proc.num_sensors / n_rows
         # x coords: rows. 
         self.x_coords = np.tile(np.arange(n_rows), n_cols)
         self.y_coords = np.repeat(np.arange(n_rows), n_cols)
         # corresponding sensor ids: say we use the first 300.
-        self.sensor_ids = np.arange(n_rows * n_cols)
+        self.sensor_ids = range(int(n_rows * n_cols))
         
         # Split command and args
-        cmdargs = self.ui.cmdLineEdit.text().split(' ')
-        cmd = cmdargs[0]
-        args = cmdargs[1:]
+        cmd = self.ui.cmdLineEdit.text()
         self.sp = PipeProcess(self.queue,
                               cmd=cmd,
-                              args=args)
+                              args=[str(self.acq_proc.num_sensors),])
         self.sp.start()
         self.timer_plot_update.start(10)
 
@@ -157,7 +189,7 @@ class MainWindow(QtGui.QMainWindow):
         self.timer_plot_update.stop()
         self.sp.stop()
         self.sp.join()
-        self.reset_buffers()
+        self.acq_proc.reset_buffers()
 
 
 def start_logging(level):
@@ -199,9 +231,12 @@ if __name__ == '__main__':
     user_info()
 
     log.info("Starting RTGraph")
+    
+    # instance of acquisiton/processing stuff:
+    ap = AcqProcessing()
 
     app = QtGui.QApplication(sys.argv)
-    win = MainWindow()
+    win = MainWindow(ap)
     win.show()
     app.exec()
 
