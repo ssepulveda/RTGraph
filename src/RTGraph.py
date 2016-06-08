@@ -132,21 +132,7 @@ class MainWindow(QtGui.QMainWindow):
         self.sp = PipeProcess(self.queue, cmd=self.ui.cmdLineEdit.text())
         self.sp.start()
         self.timer_plot_update.start(10)
-            
-    def start_serial(self):
-        log.info("Clicked start")
-        self.sp = SerialProcess(self.queue, simu=True)
-        ports = self.sp.get_ports()
-        log.info(ports)
-        if 0 < len(ports):
-            self.sp.open_port(ports[0])
-            if self.sp.is_port_available(ports[0]):
-                self.sp.start()
-                self.timer_plot_update.start(10)
-            else:
-                log.info("Port is not available")
-        else:
-            log.warning("No ports detected")
+
 
     def stop(self):
         log.info("Clicked stop")
