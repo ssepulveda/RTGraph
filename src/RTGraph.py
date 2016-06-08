@@ -26,6 +26,9 @@ class AcqProcessing:
         # ADC data is sent in an array of size
         # size = N_uplinks_per_USB * N_channels_per_uplink
         self.num_sensors = 8*1 # for VATA64 front-end
+        self.num_integrations = 100
+        
+        self.queue = multiprocessing.Queue()
     
     def parse_queue_item(self, line):
         # Here retrieve the line pushed to the queue
@@ -41,6 +44,15 @@ class AcqProcessing:
     
     def set_num_sensors(self, value):
         self.num_sensors = value
+        
+    def reset_buffers(self):
+        self.data = RingBuffer2D(self.num_integrations,
+                                    cols=self.num_sensors)
+        self.time = RingBuffer2D(1,cols=1) # Unused at the moment (buffer size is 1)
+        self.evNumber = RingBuffer2D(1,cols=1) # Unused at the moment (buffer size is 1)            
+        while not self.queue.empty():
+            self.queue.get()
+        log.info("Buffers cleared")
     
 
 
@@ -62,8 +74,8 @@ class MainWindow(QtGui.QMainWindow):
         self.evNumber = None
         self.sp = None
 
-        self.queue = multiprocessing.Queue()
-        self.reset_buffers()
+        self.queue = acq_proc.queue #multiprocessing.Queue()
+        self.acq_proc.reset_buffers()
 
         # configures
         self.configure_plot()
@@ -97,17 +109,10 @@ class MainWindow(QtGui.QMainWindow):
     def configure_signals(self):
         self.ui.pButton_Start.clicked.connect(self.start)
         self.ui.pButton_Stop.clicked.connect(self.stop)
-        self.ui.numIntSpinBox.valueChanged.connect(self.reset_buffers)
+        self.ui.numIntSpinBox.valueChanged.connect(self.acq_proc.reset_buffers)
         self.ui.numSensorSpinBox.valueChanged.connect(self.update_num_sensors)
     
-    def reset_buffers(self):
-            self.data = RingBuffer2D(self.ui.numIntSpinBox.value(),
-                                     cols=self.acq_proc.num_sensors)
-            self.time = RingBuffer2D(1,cols=1) # Unused at the moment (buffer size is 1)
-            self.evNumber = RingBuffer2D(1,cols=1) # Unused at the moment (buffer size is 1)            
-            while not self.queue.empty():
-                self.queue.get()
-            log.info("Buffers cleared")
+    
 
     def update_num_sensors(self, value):
         self.acq_proc.set_num_sensors(value)
@@ -121,22 +126,22 @@ class MainWindow(QtGui.QMainWindow):
         while not self.queue.empty():
             kk+=1
             data = self.queue.get(False)
-            # data is a list(event number, time, [array,of,values])
+            # acq_proc.data is a list(event number, time, [array,of,values])
             eN = data[0]
             ts = data[1]
             values = data[2]
-            self.data.append(values)
-            self.time.append(ts)
-            self.evNumber.append(eN)
-        #print(self.data.get_all())
+            self.acq_proc.data.append(values)
+            self.acq_proc.time.append(ts)
+            self.acq_proc.evNumber.append(eN)
+        #print(self.acq_proc.data.get_all())
         
         print("Poped {} values".format(kk))
         if values:
             if self.ui.intCheckBox.isChecked():
-                int_data = np.sum(self.data.get_all(), axis=0)
+                int_data = np.sum(self.acq_proc.data.get_all(), axis=0)
                 # FIXME reshape just to make it 2D
                 self.img.setImage(int_data.reshape(len(int_data),1))
-                intensity = int_data[self.sensor_ids] / (2**12*self.data.rows)
+                intensity = int_data[self.sensor_ids] / (2**12*self.acq_proc.data.rows)
                 colors = [pg.intColor(200, alpha=k) for k in intensity/ np.max(intensity) * 100] 
                 self.scatt.setData(x=self.x_coords,
                                    y=self.y_coords, 
@@ -160,7 +165,7 @@ class MainWindow(QtGui.QMainWindow):
     def start(self):
         log.info("Clicked start (pipe)")
         # reset buffers to ensure they have an adequate size
-        self.reset_buffers()
+        self.acq_proc.reset_buffers()
         # TODO Fix this temporary geometry
         n_rows = 2
         n_cols = self.acq_proc.num_sensors / n_rows
@@ -184,7 +189,7 @@ class MainWindow(QtGui.QMainWindow):
         self.timer_plot_update.stop()
         self.sp.stop()
         self.sp.join()
-        self.reset_buffers()
+        self.acq_proc.reset_buffers()
 
 
 def start_logging(level):
