@@ -14,12 +14,6 @@ from pipeProcess import PipeProcess
 from ringBuffer2D import RingBuffer2D
 from gui import *
 
-
-TIMEOUT = 1000
-SAMPLES = 100
-
-
-
 class AcqProcessing:
     def __init__(self):
         # USBBoard data format:
@@ -74,7 +68,6 @@ class MainWindow(QtGui.QMainWindow):
         self.evNumber = None
         self.sp = None
 
-        self.queue = acq_proc.queue #multiprocessing.Queue()
         self.acq_proc.reset_buffers()
 
         # configures
@@ -110,12 +103,7 @@ class MainWindow(QtGui.QMainWindow):
         self.ui.pButton_Start.clicked.connect(self.start)
         self.ui.pButton_Stop.clicked.connect(self.stop)
         self.ui.numIntSpinBox.valueChanged.connect(self.acq_proc.reset_buffers)
-        self.ui.numSensorSpinBox.valueChanged.connect(self.update_num_sensors)
-    
-    
-
-    def update_num_sensors(self, value):
-        self.acq_proc.set_num_sensors(value)
+        self.ui.numSensorSpinBox.valueChanged.connect(self.acq_proc.set_num_sensors)
 
     def update_plot(self):
         values = []
@@ -123,19 +111,18 @@ class MainWindow(QtGui.QMainWindow):
         #print("Queue size: {}".format(self.queue.qsize()))
         tt = time.time()
         kk = 0
-        while not self.queue.empty():
+        queue = self.acq_proc.queue
+        while not queue.empty():
             kk+=1
-            data = self.queue.get(False)
+            data = queue.get(False)
             # acq_proc.data is a list(event number, time, [array,of,values])
-            eN = data[0]
-            ts = data[1]
-            values = data[2]
+            eN, ts, values = data[0:3]
             self.acq_proc.data.append(values)
             self.acq_proc.time.append(ts)
             self.acq_proc.evNumber.append(eN)
         #print(self.acq_proc.data.get_all())
         
-        print("Poped {} values".format(kk))
+        #print("Poped {} values".format(kk))
         if values:
             if self.ui.intCheckBox.isChecked():
                 int_data = np.sum(self.acq_proc.data.get_all(), axis=0)
@@ -177,7 +164,7 @@ class MainWindow(QtGui.QMainWindow):
         
         # Split command and args
         cmd = self.ui.cmdLineEdit.text()
-        self.sp = PipeProcess(self.queue,
+        self.sp = PipeProcess(self.acq_proc.queue,
                               cmd=cmd,
                               args=[str(self.acq_proc.num_sensors),])
         self.sp.start()

@@ -36,7 +36,6 @@ class PipeProcess(multiprocessing.Process):
             if len(data) > 1:
                 # data is (event Number, timestamp, [SIZE ADC values])
                 vals = list(map(int, data[2:-1]))
-                print("Got data: {}".format(' '.join([str(k) for k in vals])))
                 self.queue.put((int(data[0]),int(data[1]),vals))
 
             else:
