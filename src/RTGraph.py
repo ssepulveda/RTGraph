@@ -18,6 +18,11 @@ from gui import *
 TIMEOUT = 1000
 SAMPLES = 100
 
+# USBBoard data format:
+# ADC data is sent in an array of size
+# size = N_uplinks_per_USB * N_channels_per_uplink
+SIZE = 8*1 # for VATA64 front-end
+
 
 class MainWindow(QtGui.QMainWindow):
     def __init__(self):
@@ -30,6 +35,7 @@ class MainWindow(QtGui.QMainWindow):
         self.timer_freq_update = None
         self.data = None
         self.time = None
+        self.evNumber = None
         self.sp = None
 
         self.queue = multiprocessing.Queue()
@@ -70,17 +76,9 @@ class MainWindow(QtGui.QMainWindow):
         self.ui.numIntSpinBox.valueChanged.connect(self.reset_buffers)
     
     def reset_buffers(self):
-            # First argument of the fake_acq command is the number of
-            # cols
-            cmdargs = self.ui.cmdLineEdit.text().split(' ')
-            if len(cmdargs) > 1:
-                cols = int(cmdargs[1])
-            else:
-                cols = 512
-            print("DEBUG: using {} cols".format(cols))
-            self.data = RingBuffer2D(self.ui.numIntSpinBox.value(),
-                                     cols=cols)
-            self.time = RingBuffer2D(1, cols=cols) # Unused at the moment
+            self.data = RingBuffer2D(self.ui.numIntSpinBox.value(),SIZE)
+            self.time = RingBuffer2D(1,cols=1) # Unused at the moment (buffer size is 1)
+            self.evNumber = RingBuffer2D(1,cols=1) # Unused at the moment (buffer size is 1)            
             while not self.queue.empty():
                 self.queue.get()
             log.info("Buffers cleared")
@@ -88,21 +86,22 @@ class MainWindow(QtGui.QMainWindow):
     def update_plot(self):
         values = []
         # Just for debugging purpose: approx. queue size
-        print("Queue size: {}".format(self.queue.qsize()))
+        #print("Queue size: {}".format(self.queue.qsize()))
         tt = time.time()
         kk = 0
         while not self.queue.empty():
             kk+=1
             data = self.queue.get(False)
-            # data is a list(time, [array,of,values])
-            ts = data[0]
-            values = data[1]
-            #print(values)
+            # data is a list(event number, time, [array,of,values])
+            eN = data[0]
+            ts = data[1]
+            values = data[2]
             self.data.append(values)
             self.time.append(ts)
+            self.evNumber.append(eN)
         #print(self.data.get_all())
         
-        #print("Poped {} values".format(kk))
+        print("Poped {} values".format(kk))
         if values:
             if self.ui.intCheckBox.isChecked():
                 int_data = np.sum(self.data.get_all(), axis=0)
@@ -127,19 +126,20 @@ class MainWindow(QtGui.QMainWindow):
             # or integration (once the queue is empty)
             
             nt = time.time()
-            print("Framerate: {} fps".format(1 / (nt - tt)))
+            #print("Framerate: {} fps".format(1 / (nt - tt)))
     
     def start(self):
         log.info("Clicked start (pipe)")
         # reset buffers to ensure they have an adequate size
         self.reset_buffers()
-        n_rows = 10
-        n_cols = 20
+        # TODO Fix this temporary geometry
+        n_rows = 2
+        n_cols = SIZE / n_rows
         # x coords: rows. 
         self.x_coords = np.tile(np.arange(n_rows), n_cols)
         self.y_coords = np.repeat(np.arange(n_rows), n_cols)
         # corresponding sensor ids: say we use the first 300.
-        self.sensor_ids = np.arange(n_rows * n_cols)
+        self.sensor_ids = range(int(n_rows * n_cols))
         
         # Split command and args
         cmdargs = self.ui.cmdLineEdit.text().split(' ')

@@ -379,7 +379,7 @@ QStatusBar {
         <item row="3" column="0">
          <widget class="QLineEdit" name="cmdLineEdit">
           <property name="text">
-           <string>./fake_acq.py</string>
+           <string>./fake_acq.py 8</string>
           </property>
          </widget>
         </item>

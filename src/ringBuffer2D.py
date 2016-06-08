@@ -14,7 +14,7 @@ class RingBuffer2D(object):
         """
         initialization
         """
-        self.rows = rows
+        self.rows = rows # size of buffer = how many events you want to keep for integration for example
         self.cols = cols
 
         self._data = np.empty((rows, cols), dtype=dtype)
@@ -33,16 +33,15 @@ class RingBuffer2D(object):
         # Go to the next position
         self.curr_pos = (self.curr_pos + 1) % self.rows
         # Increment filled_rows if necessary
-        if self.filled_rows < self.rows:
-            self.filled_rows += 1
+        if self.filled_rows < self.rows: 
+            self.filled_rows+=1
 
     def get_all(self):
         """
         return a list of elements from the oldest to the newest
         """
         if self.filled_rows < self.rows:
-            return np.roll(self._data,
-                           -(self.curr_pos + self.rows - self.filled_rows),
+            return np.roll(self._data, -(self.curr_pos + self.rows - self.filled_rows),
                            axis=0)[:self.filled_rows,:]
         else:
             # The buffer has fewer lines in this case
@@ -50,7 +49,7 @@ class RingBuffer2D(object):
                            axis=0)
 
     def get_partial(self, at=0):
-        # Return last item
+        # Return last item 
         return self._data[(self.curr_pos-1 + at) % self.rows]
 
     def __getitem__(self, key):
@@ -68,3 +67,4 @@ class RingBuffer2D(object):
         s = s + '\npointer: ' + str(self.curr_pos)
         s = s + '\nsize ({},{})'.format(self.rows, self.cols)
         return s
+

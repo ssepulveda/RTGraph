@@ -14,15 +14,19 @@ followed by 512 uint16 (2 bytes each), therefore ~ 1 kByte per line.
 """
 
 if __name__ == "__main__":
+    N =  512 # Sensor number
     if len(sys.argv) > 1:
-        N = int(sys.argv[1])
-    else:
-        N =  512 # Sensor number
+        N = int(sys.argv[1]) # first option of function is number of sensors
+    print("Number of sensors:",N)
     max_val = 2**16 - 1
-    freq = 500. # Hz
+    freq = 100. # Hz
+    evCounter = 0
     while 1:
-        print("{}\t".format(int(time.time())), end="")
+        print("{}\t".format(int(evCounter)), end=""),
+        print("{}\t".format(int(time.time())), end=""),
         for _ in range(N):
             print("{}\t".format(random.randint(0, max_val)), end=""),
         time.sleep(1/freq)
         print()
+        evCounter += 1
+        sys.stdout.flush()
