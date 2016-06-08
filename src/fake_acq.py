@@ -17,7 +17,7 @@ if __name__ == "__main__":
     max_val = 2**16 - 1
     freq = 500. # Hz
     while 1:
-        print("{}\t".format(int(time.time())), end=""),
+        print("{}\t".format(int(time.time())), end="")
         for _ in range(N):
             print("{}\t".format(random.randint(0, max_val)), end=""),
         time.sleep(1/freq)

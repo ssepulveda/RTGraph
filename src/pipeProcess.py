@@ -2,11 +2,10 @@ import multiprocessing
 import logging as log
 import io
 import time
-import random
 import subprocess
 
 class PipeProcess(multiprocessing.Process):
-    def __init__(self, result_queue, 
+    def __init__(self, result_queue,
                  cmd="./fake_acq.py", args=""):
         self.queue = result_queue
         multiprocessing.Process.__init__(self)
@@ -22,12 +21,12 @@ class PipeProcess(multiprocessing.Process):
         for line in io.TextIOWrapper(proc.stdout, encoding="utf-8"):
             if self.exit.is_set():
                 proc.terminate()
-            
+
             # Parse and push
             data = line.split("\t")
             if len(data) > 1:
                 vals = list(map(int, data[1:-1]))
-                self.queue.put((int(data[0]),vals))
+                self.queue.put((int(data[0]), vals))
 
             else:
                 continue

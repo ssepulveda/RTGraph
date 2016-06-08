@@ -49,7 +49,16 @@ class MainWindow(QtGui.QMainWindow):
         self.hist.setImageItem(self.img)
         self.plt1.addItem(self.img)
         self.ui.plt.addItem(self.hist)
-
+        self.plt2 = self.ui.plt.addPlot()
+        # pxMode: the spots size is independent of the zoom level
+        # pen: contour
+        self.scatt = pg.ScatterPlotItem(pxMode=True,
+                                        pen=pg.mkPen(None))
+        """
+        self.plt2.setDownsampling(ds=True, auto=True, mode='peak')
+        self.plt2.setClipToView(True)
+        """
+        self.plt2.addItem(self.scatt)
 
     def configure_timers(self):
         self.timer_plot_update = QtCore.QTimer(self)
@@ -70,7 +79,7 @@ class MainWindow(QtGui.QMainWindow):
     def update_plot(self):
         values = []
         # Just for debugging purpose: approx. queue size
-        #print("Queue size: {}".format(self.queue.qsize()))
+        print("Queue size: {}".format(self.queue.qsize()))
         tt = time.time()
         kk = 0
         while not self.queue.empty():
@@ -87,18 +96,38 @@ class MainWindow(QtGui.QMainWindow):
         #print("Poped {} values".format(kk))
         if values:
             if self.ui.intCheckBox.isChecked():
-                self.img.setImage(np.sum(self.data.get_all(), axis=0).reshape(16,32))
+                int_data = np.sum(self.data.get_all(), axis=0).reshape(16,32)
+                self.img.setImage(int_data)
+                self.scatt.setData(x=self.x_coords,
+                                   y=self.y_coords, 
+                                   size=np.array(values)[self.sensor_ids] / (2**14*self.data.rows))
             else:
                 # Last value (empty queue)
                 self.img.setImage(np.array(values).reshape(16,32))
+                intensity = np.array(values)[self.sensor_ids] / 2**12
+                colors = [pg.intColor(200, alpha=k) for k in intensity/ np.max(intensity) * 100] 
+                self.scatt.setData(x=self.x_coords,
+                                   y=self.y_coords, 
+                                   size=intensity,
+                                   
+                                   brush=colors)
+                
             # or integration (once the queue is empty)
             
             nt = time.time()
-            #print("Framerate: {} fps".format(1 / (nt - tt)))
+            print("Framerate: {} fps".format(1 / (nt - tt)))
     
     def start(self):
         log.info("Clicked start (pipe)")
-        self.sp = PipeProcess(self.queue, cmd=self.ui.cmdLineEdit.text())#"./fake_acq.py")
+        n_rows = 10
+        n_cols = 30
+        # x coords: rows. 
+        self.x_coords = np.tile(np.arange(30), 10)
+        self.y_coords = np.repeat(np.arange(10), 30)
+        # corresponding sensor ids: say we use the first 300.
+        self.sensor_ids = np.arange(n_rows * n_cols)
+        
+        self.sp = PipeProcess(self.queue, cmd=self.ui.cmdLineEdit.text())
         self.sp.start()
         self.timer_plot_update.start(10)
             
