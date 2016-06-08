@@ -18,17 +18,29 @@ from gui import *
 TIMEOUT = 1000
 SAMPLES = 100
 
-# USBBoard data format:
-# ADC data is sent in an array of size
-# size = N_uplinks_per_USB * N_channels_per_uplink
-SIZE = 8*1 # for VATA64 front-end
+
+
+class AcqProcessing:
+    def __init__(self):
+        # USBBoard data format:
+        # ADC data is sent in an array of size
+        # size = N_uplinks_per_USB * N_channels_per_uplink
+        self.num_sensors = 8*1 # for VATA64 front-end
+    
+    def set_num_sensors(self, value):
+        self.num_sensors = value
+    
 
 
 class MainWindow(QtGui.QMainWindow):
-    def __init__(self):
+    def __init__(self, acq_proc):
         QtGui.QMainWindow.__init__(self)
         self.ui = Ui_MainWindow()
         self.ui.setupUi(self)
+        
+        # Know about an instance of acquisition/processing code
+        # to forward GUI events
+        self.acq_proc = acq_proc
 
         self.plt1 = None
         self.timer_plot_update = None
@@ -74,14 +86,19 @@ class MainWindow(QtGui.QMainWindow):
         self.ui.pButton_Start.clicked.connect(self.start)
         self.ui.pButton_Stop.clicked.connect(self.stop)
         self.ui.numIntSpinBox.valueChanged.connect(self.reset_buffers)
+        self.ui.numSensorSpinBox.valueChanged.connect(self.update_num_sensors)
     
     def reset_buffers(self):
-            self.data = RingBuffer2D(self.ui.numIntSpinBox.value(),SIZE)
+            self.data = RingBuffer2D(self.ui.numIntSpinBox.value(),
+                                     cols=self.acq_proc.num_sensors)
             self.time = RingBuffer2D(1,cols=1) # Unused at the moment (buffer size is 1)
             self.evNumber = RingBuffer2D(1,cols=1) # Unused at the moment (buffer size is 1)            
             while not self.queue.empty():
                 self.queue.get()
             log.info("Buffers cleared")
+
+    def update_num_sensors(self, value):
+        self.acq_proc.set_num_sensors(value)
 
     def update_plot(self):
         values = []
@@ -134,7 +151,7 @@ class MainWindow(QtGui.QMainWindow):
         self.reset_buffers()
         # TODO Fix this temporary geometry
         n_rows = 2
-        n_cols = SIZE / n_rows
+        n_cols = self.acq_proc.num_sensors / n_rows
         # x coords: rows. 
         self.x_coords = np.tile(np.arange(n_rows), n_cols)
         self.y_coords = np.repeat(np.arange(n_rows), n_cols)
@@ -142,12 +159,10 @@ class MainWindow(QtGui.QMainWindow):
         self.sensor_ids = range(int(n_rows * n_cols))
         
         # Split command and args
-        cmdargs = self.ui.cmdLineEdit.text().split(' ')
-        cmd = cmdargs[0]
-        args = cmdargs[1:]
+        cmd = self.ui.cmdLineEdit.text()
         self.sp = PipeProcess(self.queue,
                               cmd=cmd,
-                              args=args)
+                              args=[str(self.acq_proc.num_sensors),])
         self.sp.start()
         self.timer_plot_update.start(10)
 
@@ -199,9 +214,12 @@ if __name__ == '__main__':
     user_info()
 
     log.info("Starting RTGraph")
+    
+    # instance of acquisiton/processing stuff:
+    ap = AcqProcessing()
 
     app = QtGui.QApplication(sys.argv)
-    win = MainWindow()
+    win = MainWindow(ap)
     win.show()
     app.exec()
 

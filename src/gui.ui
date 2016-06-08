@@ -319,7 +319,7 @@ QStatusBar {
         </property>
        </widget>
       </item>
-      <item row="1" column="0">
+      <item row="2" column="0">
        <layout class="QGridLayout" name="Layout_controls">
         <item row="0" column="1">
          <widget class="QPushButton" name="pButton_Stop">
@@ -377,11 +377,32 @@ QStatusBar {
          </widget>
         </item>
         <item row="3" column="0">
-         <widget class="QLineEdit" name="cmdLineEdit">
-          <property name="text">
-           <string>./fake_acq.py 8</string>
-          </property>
-         </widget>
+         <layout class="QHBoxLayout" name="horizontalLayout_2">
+          <item>
+           <widget class="QLineEdit" name="cmdLineEdit">
+            <property name="text">
+             <string>./fake_acq.py</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QLabel" name="numSensorLbl">
+            <property name="text">
+             <string>Number of sensors:</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QSpinBox" name="numSensorSpinBox">
+            <property name="maximum">
+             <number>512</number>
+            </property>
+            <property name="value">
+             <number>8</number>
+            </property>
+           </widget>
+          </item>
+         </layout>
         </item>
        </layout>
       </item>
