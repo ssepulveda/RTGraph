@@ -96,11 +96,14 @@ class MainWindow(QtGui.QMainWindow):
         #print("Poped {} values".format(kk))
         if values:
             if self.ui.intCheckBox.isChecked():
-                int_data = np.sum(self.data.get_all(), axis=0).reshape(16,32)
-                self.img.setImage(int_data)
+                int_data = np.sum(self.data.get_all(), axis=0)
+                self.img.setImage(int_data.reshape(16,32))
+                intensity = int_data[self.sensor_ids] / (2**12*self.data.rows)
+                colors = [pg.intColor(200, alpha=k) for k in intensity/ np.max(intensity) * 100] 
                 self.scatt.setData(x=self.x_coords,
                                    y=self.y_coords, 
-                                   size=np.array(values)[self.sensor_ids] / (2**14*self.data.rows))
+                                   size=intensity,
+                                   brush=colors)
             else:
                 # Last value (empty queue)
                 self.img.setImage(np.array(values).reshape(16,32))
@@ -109,7 +112,6 @@ class MainWindow(QtGui.QMainWindow):
                 self.scatt.setData(x=self.x_coords,
                                    y=self.y_coords, 
                                    size=intensity,
-                                   
                                    brush=colors)
                 
             # or integration (once the queue is empty)
