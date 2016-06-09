@@ -24,11 +24,20 @@ class AcqProcessing:
         
         self.queue = multiprocessing.Queue()
     
-    def parse_queue_item(self, line):
+    def parse_queue_item(self, line, save=False):
         # Here retrieve the line pushed to the queue
         # and properly parse it to return 
         # several values such as ID, time, [list of vals]
-        pass
+        line_items = line.split('\t')
+        if len(line_items) <= 1: return None, None, None
+        items = [int(kk) for kk in line_items]
+        ev_num, ts, intensities = items[0], items[1], items[2:]
+        if save:
+            self.data.append(intensities)
+            self.time.append(ts)
+            self.evNumber.append(ev_num)
+            
+        return ev_num, ts, intensities
     
     def set_sensor_id(self, num, x_pos, y_pos):
         # Think about a good datastructure to do this.
@@ -36,6 +45,26 @@ class AcqProcessing:
         # then merged to 1D arrays of x_pos, y_pos, nums
         pass
     
+    def set_sensor_as_grid(rows=1, cols=1):
+        """
+        Assume that the values retrieved are sorted by line.
+        in this case, self.n_rows = rows, self.n_cols = cols.
+        If rows = 2 and cols = 3,sensor 0 is at (0, 0), while 
+        sensor 1 is at (0,1), sensor 3 is at (0, 2), sensor 4 at (1,0)
+        """
+        if isinstance(rows, list):
+            x_coords = rows # Row positions directly provided
+        else:
+            x_coords = np.arange(rows) # Assume unit position between each row
+        if isinstance(cols, list):
+            y_coords = np.arrange(cols)
+        else:
+            y_coords = np.arange(cols)
+
+        # Update corresponding number of sensors
+        # WARNING in we update this value$, the GUI should be updated as well.
+        self.num_sensors = len(x_coords) * len(y_coords)
+
     def set_num_sensors(self, value):
         self.num_sensors = value
         
@@ -63,12 +92,9 @@ class MainWindow(QtGui.QMainWindow):
         self.plt1 = None
         self.timer_plot_update = None
         self.timer_freq_update = None
-        self.data = None
-        self.time = None
-        self.evNumber = None
         self.sp = None
 
-        self.acq_proc.reset_buffers()
+        self.acq_proc.reset_buffers() # Prepare acquisition
 
         # configures
         self.configure_plot()
@@ -114,12 +140,8 @@ class MainWindow(QtGui.QMainWindow):
         queue = self.acq_proc.queue
         while not queue.empty():
             kk+=1
-            data = queue.get(False)
-            # acq_proc.data is a list(event number, time, [array,of,values])
-            eN, ts, values = data[0:3]
-            self.acq_proc.data.append(values)
-            self.acq_proc.time.append(ts)
-            self.acq_proc.evNumber.append(eN)
+            raw_data = queue.get(False)
+            _, _, values = self.acq_proc.parse_queue_item(raw_data, save=True)
         #print(self.acq_proc.data.get_all())
         
         #print("Poped {} values".format(kk))
@@ -145,7 +167,6 @@ class MainWindow(QtGui.QMainWindow):
                                    brush=colors)
                 
             # or integration (once the queue is empty)
-            
             nt = time.time()
             #print("Framerate: {} fps".format(1 / (nt - tt)))
     
@@ -232,3 +253,4 @@ if __name__ == '__main__':
     win.close()
     app.exit()
     sys.exit()
+    

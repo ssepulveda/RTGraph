@@ -30,16 +30,9 @@ class PipeProcess(multiprocessing.Process):
             if self.exit.is_set():
                 proc.terminate()
 
-            # Parse and push
-            data = line.split("\t")
-            
-            if len(data) > 1:
-                # data is (event Number, timestamp, [SIZE ADC values])
-                vals = list(map(int, data[2:-1]))
-                self.queue.put((int(data[0]),int(data[1]),vals))
-
-            else:
-                continue
+            data = line.strip()
+            if data != '':
+                self.queue.put(data)
 
     def stop(self):
         log.info("PipeProcess finishing...")
