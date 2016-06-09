@@ -24,10 +24,6 @@ class AcqProcessing:
         
         self.integrate = False # no integration mode
         self.queue = multiprocessing.Queue()
-        
-        # Init sensors
-        self.set_sensor_as_grid(rows=list(range(self.num_sensors)), 
-                                cols=np.zeros(self.num_sensors))
     
     def parse_queue_item(self, line, save=False):
         # Here retrieve the line pushed to the queue
@@ -63,17 +59,13 @@ class AcqProcessing:
         # then merged to 1D arrays of x_pos, y_pos, nums
         pass
     
-    def set_sensor_as_grid(self, rows=[0,], cols=[0,]):
-        """
-        FIXME document
-        """
-        self.x_coords = rows # Row positions directly provided
-        self.y_coords = cols
-
-        # Update corresponding number of sensors
-        # WARNING in we update this value, the GUI should be updated as well.
-        self.num_sensors = len(self.x_coords)
-        self.sensor_ids = list(range(self.num_sensors))
+    def set_sensor_pos(self, x_coords, y_coords, sensor_num):
+        self.x_coords = x_coords
+        self.y_coords = y_coords
+        self.sensor_ids = sensor_num
+        # update num_sensors
+        self.num_sensors = len(self.sensor_ids)
+        self.reset_buffers()
 
     def set_num_sensors(self, value):
         self.num_sensors = value
@@ -107,12 +99,12 @@ class MainWindow(QtGui.QMainWindow):
         self.timer_freq_update = None
         self.sp = None
 
-        self.acq_proc.reset_buffers() # Prepare acquisition
-
         # configures
         self.configure_plot()
         self.configure_timers()
         self.configure_signals()
+        
+        self.sig_load_sensor_pos() # Prepare acquisition
 
     def configure_plot(self):
         self.ui.plt.setBackground(background=None)
@@ -144,7 +136,15 @@ class MainWindow(QtGui.QMainWindow):
         self.ui.numIntSpinBox.valueChanged.connect(self.acq_proc.reset_buffers)
         self.ui.numSensorSpinBox.valueChanged.connect(self.acq_proc.set_num_sensors)
         self.ui.intCheckBox.stateChanged.connect(self.sig_int_changed)
-        
+        self.ui.sensorLoadbtn.clicked.connect(self.sig_load_sensor_pos)
+    
+    def sig_load_sensor_pos(self):
+        file_path = self.ui.sensorConfFile.text()
+        print("Loading file {}".format(file_path))
+        data = np.genfromtxt(file_path, dtype=np.int)
+        # Format is: x,y,sensor_num
+        self.acq_proc.set_sensor_pos(data[:,0], data[:,1], data[:,2])
+    
     def sig_int_changed(self):
         is_int = self.ui.intCheckBox.isChecked()
         self.acq_proc.set_integration_mode(is_int)
