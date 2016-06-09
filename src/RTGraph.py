@@ -14,12 +14,6 @@ from pipeProcess import PipeProcess
 from ringBuffer2D import RingBuffer2D
 from gui import *
 
-
-TIMEOUT = 1000
-SAMPLES = 100
-
-
-
 class AcqProcessing:
     def __init__(self):
         # USBBoard data format:
@@ -28,13 +22,40 @@ class AcqProcessing:
         self.num_sensors = 8*1 # for VATA64 front-end
         self.num_integrations = 100
         
+        self.integrate = False # no integration mode
         self.queue = multiprocessing.Queue()
+        
+        # Init sensors
+        self.set_sensor_as_grid(rows=list(range(self.num_sensors)), 
+                                cols=np.zeros(self.num_sensors))
     
-    def parse_queue_item(self, line):
+    def parse_queue_item(self, line, save=False):
         # Here retrieve the line pushed to the queue
         # and properly parse it to return 
         # several values such as ID, time, [list of vals]
-        pass
+        line_items = line.split('\t')
+        if len(line_items) <= 1: return None, None, None
+        items = [int(kk) for kk in line_items]
+        ev_num, ts, intensities = items[0], items[1], items[2:]
+        if save:
+            self.data.append(intensities)
+            self.time.append(ts)
+            self.evNumber.append(ev_num)
+            
+        return ev_num, ts, intensities
+    
+    def plot_signals_scatter(self):
+        data = self.plot_signals_map().ravel()
+        intensity = data[self.sensor_ids] / (2**10*self.num_sensors)
+        colors = [pg.intColor(200, alpha=k) for k in intensity/ np.max(intensity) * 100] 
+        return intensity, colors
+    
+    def plot_signals_map(self):
+        if self.integrate:
+            return np.sum(self.data.get_all(), axis=0).reshape(self.num_sensors,1)
+        else:
+            return self.data.get_partial().reshape(self.num_sensors,1)
+        
     
     def set_sensor_id(self, num, x_pos, y_pos):
         # Think about a good datastructure to do this.
@@ -42,14 +63,29 @@ class AcqProcessing:
         # then merged to 1D arrays of x_pos, y_pos, nums
         pass
     
+    def set_sensor_as_grid(self, rows=[0,], cols=[0,]):
+        """
+        FIXME document
+        """
+        self.x_coords = rows # Row positions directly provided
+        self.y_coords = cols
+
+        # Update corresponding number of sensors
+        # WARNING in we update this value, the GUI should be updated as well.
+        self.num_sensors = len(self.x_coords)
+        self.sensor_ids = list(range(self.num_sensors))
+
     def set_num_sensors(self, value):
         self.num_sensors = value
-        
+    
+    def set_integration_mode(self, value):
+        self.integrate = value
+    
     def reset_buffers(self):
         self.data = RingBuffer2D(self.num_integrations,
                                     cols=self.num_sensors)
-        self.time = RingBuffer2D(1,cols=1) # Unused at the moment (buffer size is 1)
-        self.evNumber = RingBuffer2D(1,cols=1) # Unused at the moment (buffer size is 1)            
+        self.time = RingBuffer2D(1, cols=1) # Unused at the moment (buffer size is 1)
+        self.evNumber = RingBuffer2D(1, cols=1) # Unused at the moment (buffer size is 1)            
         while not self.queue.empty():
             self.queue.get()
         log.info("Buffers cleared")
@@ -69,13 +105,9 @@ class MainWindow(QtGui.QMainWindow):
         self.plt1 = None
         self.timer_plot_update = None
         self.timer_freq_update = None
-        self.data = None
-        self.time = None
-        self.evNumber = None
         self.sp = None
 
-        self.queue = acq_proc.queue #multiprocessing.Queue()
-        self.acq_proc.reset_buffers()
+        self.acq_proc.reset_buffers() # Prepare acquisition
 
         # configures
         self.configure_plot()
@@ -110,12 +142,12 @@ class MainWindow(QtGui.QMainWindow):
         self.ui.pButton_Start.clicked.connect(self.start)
         self.ui.pButton_Stop.clicked.connect(self.stop)
         self.ui.numIntSpinBox.valueChanged.connect(self.acq_proc.reset_buffers)
-        self.ui.numSensorSpinBox.valueChanged.connect(self.update_num_sensors)
-    
-    
-
-    def update_num_sensors(self, value):
-        self.acq_proc.set_num_sensors(value)
+        self.ui.numSensorSpinBox.valueChanged.connect(self.acq_proc.set_num_sensors)
+        self.ui.intCheckBox.stateChanged.connect(self.sig_int_changed)
+        
+    def sig_int_changed(self):
+        is_int = self.ui.intCheckBox.isChecked()
+        self.acq_proc.set_integration_mode(is_int)
 
     def update_plot(self):
         values = []
@@ -123,42 +155,25 @@ class MainWindow(QtGui.QMainWindow):
         #print("Queue size: {}".format(self.queue.qsize()))
         tt = time.time()
         kk = 0
-        while not self.queue.empty():
+        queue = self.acq_proc.queue
+        while not queue.empty():
             kk+=1
-            data = self.queue.get(False)
-            # acq_proc.data is a list(event number, time, [array,of,values])
-            eN = data[0]
-            ts = data[1]
-            values = data[2]
-            self.acq_proc.data.append(values)
-            self.acq_proc.time.append(ts)
-            self.acq_proc.evNumber.append(eN)
+            raw_data = queue.get(False)
+            _, _, values = self.acq_proc.parse_queue_item(raw_data, save=True)
         #print(self.acq_proc.data.get_all())
         
-        print("Poped {} values".format(kk))
+        #print("Poped {} values".format(kk))
         if values:
-            if self.ui.intCheckBox.isChecked():
-                int_data = np.sum(self.acq_proc.data.get_all(), axis=0)
-                # FIXME reshape just to make it 2D
-                self.img.setImage(int_data.reshape(len(int_data),1))
-                intensity = int_data[self.sensor_ids] / (2**12*self.acq_proc.data.rows)
-                colors = [pg.intColor(200, alpha=k) for k in intensity/ np.max(intensity) * 100] 
-                self.scatt.setData(x=self.x_coords,
-                                   y=self.y_coords, 
-                                   size=intensity,
-                                   brush=colors)
-            else:
-                # Last value (empty queue)
-                self.img.setImage(np.array(values).reshape((len(values), 1)))
-                intensity = np.array(values)[self.sensor_ids] / 2**12
-                colors = [pg.intColor(200, alpha=k) for k in intensity/ np.max(intensity) * 100] 
-                self.scatt.setData(x=self.x_coords,
-                                   y=self.y_coords, 
-                                   size=intensity,
-                                   brush=colors)
+            
+            data = self.acq_proc.plot_signals_map()
+            intensity, colors = self.acq_proc.plot_signals_scatter()
+            self.img.setImage(data)
+            self.scatt.setData(x=self.acq_proc.x_coords,
+                                y=self.acq_proc.y_coords, 
+                                size=intensity,
+                                brush=colors)
                 
             # or integration (once the queue is empty)
-            
             nt = time.time()
             #print("Framerate: {} fps".format(1 / (nt - tt)))
     
@@ -177,7 +192,7 @@ class MainWindow(QtGui.QMainWindow):
         
         # Split command and args
         cmd = self.ui.cmdLineEdit.text()
-        self.sp = PipeProcess(self.queue,
+        self.sp = PipeProcess(self.acq_proc.queue,
                               cmd=cmd,
                               args=[str(self.acq_proc.num_sensors),])
         self.sp.start()
@@ -245,3 +260,4 @@ if __name__ == '__main__':
     win.close()
     app.exit()
     sys.exit()
+    
