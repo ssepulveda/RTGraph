@@ -23,7 +23,6 @@ class AcqProcessing:
         self.num_integrations = 100
         
         self.integrate = False # no integration mode
-        
         self.queue = multiprocessing.Queue()
         
         # Init sensors
@@ -85,8 +84,8 @@ class AcqProcessing:
     def reset_buffers(self):
         self.data = RingBuffer2D(self.num_integrations,
                                     cols=self.num_sensors)
-        self.time = RingBuffer2D(1,cols=1) # Unused at the moment (buffer size is 1)
-        self.evNumber = RingBuffer2D(1,cols=1) # Unused at the moment (buffer size is 1)            
+        self.time = RingBuffer2D(1, cols=1) # Unused at the moment (buffer size is 1)
+        self.evNumber = RingBuffer2D(1, cols=1) # Unused at the moment (buffer size is 1)            
         while not self.queue.empty():
             self.queue.get()
         log.info("Buffers cleared")
@@ -144,6 +143,11 @@ class MainWindow(QtGui.QMainWindow):
         self.ui.pButton_Stop.clicked.connect(self.stop)
         self.ui.numIntSpinBox.valueChanged.connect(self.acq_proc.reset_buffers)
         self.ui.numSensorSpinBox.valueChanged.connect(self.acq_proc.set_num_sensors)
+        self.ui.intCheckBox.stateChanged.connect(self.sig_int_changed)
+        
+    def sig_int_changed(self):
+        is_int = self.ui.intCheckBox.isChecked()
+        self.acq_proc.set_integration_mode(is_int)
 
     def update_plot(self):
         values = []
