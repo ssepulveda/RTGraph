@@ -4,6 +4,7 @@ import logging as log
 import pyqtgraph as pg
 
 from ringbuffer2d import RingBuffer2D
+from pipeprocess import PipeProcess
 
 
 class AcqProcessing:
@@ -16,6 +17,19 @@ class AcqProcessing:
         
         self.integrate = False # no integration mode
         self.queue = multiprocessing.Queue()
+        
+    def start_acquisition(self, cmd):
+        # reset buffers to ensure they have an adequate size
+        self.reset_buffers()
+        self.sp = PipeProcess(self.queue,
+                              cmd=cmd,
+                              args=[str(self.num_sensors),])
+        self.sp.start()
+        
+    def stop_acquisition(self):
+        self.sp.stop()
+        self.sp.join()
+        self.reset_buffers()
     
     def parse_queue_item(self, line, save=False):
         # Here retrieve the line pushed to the queue

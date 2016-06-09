@@ -12,9 +12,6 @@ import argparse
 
 from gui import *
 from acqprocessing import AcqProcessing
-from pipeprocess import PipeProcess
-
-
 
 class MainWindow(QtGui.QMainWindow):
     def __init__(self, acq_proc):
@@ -93,27 +90,18 @@ class MainWindow(QtGui.QMainWindow):
                             size=intensity,
                             brush=colors)
         nt = time.time()
-        print("Framerate: {} fps".format(1 / (nt - tt)))
+        log.info("Framerate: {} fps".format(1 / (nt - tt)))
     
     def start(self):
         log.info("Clicked start (pipe)")
-        # reset buffers to ensure they have an adequate size
-        self.acq_proc.reset_buffers()
-        
-        # Split command and args
         cmd = self.ui.cmdLineEdit.text()
-        self.sp = PipeProcess(self.acq_proc.queue,
-                              cmd=cmd,
-                              args=[str(self.acq_proc.num_sensors),])
-        self.sp.start()
+        self.acq_proc.start_acquisition(cmd)
         self.timer_plot_update.start(10)
 
     def stop(self):
         log.info("Clicked stop")
         self.timer_plot_update.stop()
-        self.sp.stop()
-        self.sp.join()
-        self.acq_proc.reset_buffers()
+        self.acq_proc.stop_acquisition()
 
 
 def start_logging(level):
