@@ -174,14 +174,6 @@ class MainWindow(QtGui.QMainWindow):
         log.info("Clicked start (pipe)")
         # reset buffers to ensure they have an adequate size
         self.acq_proc.reset_buffers()
-        # TODO Fix this temporary geometry
-        n_rows = 2
-        n_cols = self.acq_proc.num_sensors / n_rows
-        # x coords: rows. 
-        self.x_coords = np.tile(np.arange(n_rows), n_cols)
-        self.y_coords = np.repeat(np.arange(n_rows), n_cols)
-        # corresponding sensor ids: say we use the first 300.
-        self.sensor_ids = range(int(n_rows * n_cols))
         
         # Split command and args
         cmd = self.ui.cmdLineEdit.text()

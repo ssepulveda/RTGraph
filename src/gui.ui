@@ -344,7 +344,7 @@ QStatusBar {
           <item>
            <widget class="QLabel" name="numSensorLbl">
             <property name="text">
-             <string>Number of sensors:</string>
+             <string>Number of sensors: (now auto)</string>
             </property>
            </widget>
           </item>
