@@ -51,14 +51,7 @@ class AcqProcessing:
             return np.sum(self.data.get_all(), axis=0).reshape(self.num_sensors,1)
         else:
             return self.data.get_partial().reshape(self.num_sensors,1)
-        
-    
-    def set_sensor_id(self, num, x_pos, y_pos):
-        # Think about a good datastructure to do this.
-        # Perhaps tuples (num, x_pos, y_pos) for each sensor
-        # then merged to 1D arrays of x_pos, y_pos, nums
-        pass
-    
+
     def set_sensor_pos(self, x_coords, y_coords, sensor_num):
         self.x_coords = x_coords
         self.y_coords = y_coords
@@ -140,7 +133,7 @@ class MainWindow(QtGui.QMainWindow):
     
     def sig_load_sensor_pos(self):
         file_path = self.ui.sensorConfFile.text()
-        print("Loading file {}".format(file_path))
+        print("Loading sensor description file {}".format(file_path))
         data = np.genfromtxt(file_path, dtype=np.int)
         # Format is: x,y,sensor_num
         self.acq_proc.set_sensor_pos(data[:,0], data[:,1], data[:,2])
@@ -175,7 +168,7 @@ class MainWindow(QtGui.QMainWindow):
                 
             # or integration (once the queue is empty)
             nt = time.time()
-            #print("Framerate: {} fps".format(1 / (nt - tt)))
+            print("Framerate: {} fps".format(1 / (nt - tt)))
     
     def start(self):
         log.info("Clicked start (pipe)")
