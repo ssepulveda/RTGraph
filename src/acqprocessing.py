@@ -32,6 +32,18 @@ class AcqProcessing:
             
         return ev_num, ts, intensities
     
+    def fetch_data(self):
+        # Just for debugging purpose: approx. queue size
+        #print("Queue size: {}".format(self.queue.qsize()))
+        kk = 0
+        while not self.queue.empty():
+            kk+=1
+            raw_data = self.queue.get(False)
+            self.parse_queue_item(raw_data, save=True)
+            #print("Poped {} values".format(kk))
+        if kk == 0: return False
+        return True
+    
     def plot_signals_scatter(self):
         data = self.plot_signals_map().ravel()
         intensity = data[self.sensor_ids] / (2**10*self.num_sensors)

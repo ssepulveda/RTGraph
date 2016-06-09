@@ -82,32 +82,18 @@ class MainWindow(QtGui.QMainWindow):
         self.acq_proc.set_integration_mode(is_int)
 
     def update_plot(self):
-        values = []
-        # Just for debugging purpose: approx. queue size
-        #print("Queue size: {}".format(self.queue.qsize()))
         tt = time.time()
-        kk = 0
-        queue = self.acq_proc.queue
-        while not queue.empty():
-            kk+=1
-            raw_data = queue.get(False)
-            _, _, values = self.acq_proc.parse_queue_item(raw_data, save=True)
-        #print(self.acq_proc.data.get_all())
-        
-        #print("Poped {} values".format(kk))
-        if values:
-            
-            data = self.acq_proc.plot_signals_map()
-            intensity, colors = self.acq_proc.plot_signals_scatter()
-            self.img.setImage(data)
-            self.scatt.setData(x=self.acq_proc.x_coords,
-                                y=self.acq_proc.y_coords, 
-                                size=intensity,
-                                brush=colors)
-                
-            # or integration (once the queue is empty)
-            nt = time.time()
-            print("Framerate: {} fps".format(1 / (nt - tt)))
+        got_values = self.acq_proc.fetch_data()
+        if not got_values: return
+        data = self.acq_proc.plot_signals_map()
+        intensity, colors = self.acq_proc.plot_signals_scatter()
+        self.img.setImage(data.astype(np.float))
+        self.scatt.setData(x=self.acq_proc.x_coords,
+                            y=self.acq_proc.y_coords, 
+                            size=intensity,
+                            brush=colors)
+        nt = time.time()
+        print("Framerate: {} fps".format(1 / (nt - tt)))
     
     def start(self):
         log.info("Clicked start (pipe)")
