@@ -22,7 +22,13 @@ class AcqProcessing:
         self.num_sensors = 8*1 # for VATA64 front-end
         self.num_integrations = 100
         
+        self.integrate = False # no integration mode
+        
         self.queue = multiprocessing.Queue()
+        
+        # Init sensors
+        self.set_sensor_as_grid(rows=list(range(self.num_sensors)), 
+                                cols=np.zeros(self.num_sensors))
     
     def parse_queue_item(self, line, save=False):
         # Here retrieve the line pushed to the queue
@@ -39,35 +45,43 @@ class AcqProcessing:
             
         return ev_num, ts, intensities
     
+    def plot_signals_scatter(self):
+        data = self.plot_signals_map().ravel()
+        intensity = data[self.sensor_ids] / (2**10*self.num_sensors)
+        colors = [pg.intColor(200, alpha=k) for k in intensity/ np.max(intensity) * 100] 
+        return intensity, colors
+    
+    def plot_signals_map(self):
+        if self.integrate:
+            return np.sum(self.data.get_all(), axis=0).reshape(self.num_sensors,1)
+        else:
+            return self.data.get_partial().reshape(self.num_sensors,1)
+        
+    
     def set_sensor_id(self, num, x_pos, y_pos):
         # Think about a good datastructure to do this.
         # Perhaps tuples (num, x_pos, y_pos) for each sensor
         # then merged to 1D arrays of x_pos, y_pos, nums
         pass
     
-    def set_sensor_as_grid(rows=1, cols=1):
+    def set_sensor_as_grid(self, rows=[0,], cols=[0,]):
         """
-        Assume that the values retrieved are sorted by line.
-        in this case, self.n_rows = rows, self.n_cols = cols.
-        If rows = 2 and cols = 3,sensor 0 is at (0, 0), while 
-        sensor 1 is at (0,1), sensor 3 is at (0, 2), sensor 4 at (1,0)
+        FIXME document
         """
-        if isinstance(rows, list):
-            x_coords = rows # Row positions directly provided
-        else:
-            x_coords = np.arange(rows) # Assume unit position between each row
-        if isinstance(cols, list):
-            y_coords = np.arrange(cols)
-        else:
-            y_coords = np.arange(cols)
+        self.x_coords = rows # Row positions directly provided
+        self.y_coords = cols
 
         # Update corresponding number of sensors
-        # WARNING in we update this value$, the GUI should be updated as well.
-        self.num_sensors = len(x_coords) * len(y_coords)
+        # WARNING in we update this value, the GUI should be updated as well.
+        self.num_sensors = len(self.x_coords)
+        self.sensor_ids = list(range(self.num_sensors))
 
     def set_num_sensors(self, value):
         self.num_sensors = value
-        
+    
+    def set_integration_mode(self, value):
+        self.integrate = value
+    
     def reset_buffers(self):
         self.data = RingBuffer2D(self.num_integrations,
                                     cols=self.num_sensors)
@@ -146,25 +160,14 @@ class MainWindow(QtGui.QMainWindow):
         
         #print("Poped {} values".format(kk))
         if values:
-            if self.ui.intCheckBox.isChecked():
-                int_data = np.sum(self.acq_proc.data.get_all(), axis=0)
-                # FIXME reshape just to make it 2D
-                self.img.setImage(int_data.reshape(len(int_data),1))
-                intensity = int_data[self.sensor_ids] / (2**12*self.acq_proc.data.rows)
-                colors = [pg.intColor(200, alpha=k) for k in intensity/ np.max(intensity) * 100] 
-                self.scatt.setData(x=self.x_coords,
-                                   y=self.y_coords, 
-                                   size=intensity,
-                                   brush=colors)
-            else:
-                # Last value (empty queue)
-                self.img.setImage(np.array(values).reshape((len(values), 1)))
-                intensity = np.array(values)[self.sensor_ids] / 2**12
-                colors = [pg.intColor(200, alpha=k) for k in intensity/ np.max(intensity) * 100] 
-                self.scatt.setData(x=self.x_coords,
-                                   y=self.y_coords, 
-                                   size=intensity,
-                                   brush=colors)
+            
+            data = self.acq_proc.plot_signals_map()
+            intensity, colors = self.acq_proc.plot_signals_scatter()
+            self.img.setImage(data)
+            self.scatt.setData(x=self.acq_proc.x_coords,
+                                y=self.acq_proc.y_coords, 
+                                size=intensity,
+                                brush=colors)
                 
             # or integration (once the queue is empty)
             nt = time.time()
