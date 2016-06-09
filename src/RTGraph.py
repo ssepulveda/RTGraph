@@ -56,6 +56,9 @@ class AcqProcessing:
         self.x_coords = x_coords
         self.y_coords = y_coords
         self.sensor_ids = sensor_num
+        if np.array_equal(np.sort(sensor_num), np.arange(len(sensor_num))):
+            log.warning('Sensors ID not starting at 0, or duplicated, or missing')
+        
         # update num_sensors
         self.num_sensors = len(self.sensor_ids)
         self.reset_buffers()
@@ -182,7 +185,6 @@ class MainWindow(QtGui.QMainWindow):
                               args=[str(self.acq_proc.num_sensors),])
         self.sp.start()
         self.timer_plot_update.start(10)
-
 
     def stop(self):
         log.info("Clicked stop")

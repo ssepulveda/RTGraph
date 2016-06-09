@@ -17,22 +17,22 @@ class PipeProcess(multiprocessing.Process):
     # Run is started in the new process
     def run(self):
         timestamp = time.time()
-        proc = subprocess.Popen([self.cmd,  ] + self.args,
+        with subprocess.Popen([self.cmd,  ] + self.args,
                                 stdout=subprocess.PIPE,
                                 universal_newlines=True,
-                                bufsize=1)
-        for line in proc.stdout:
-            """io.TextIOWrapper(proc.stdout, 
-                                     line_buffering=False,
-                                     write_through=True,
-                                     encoding=None):
-            """
-            if self.exit.is_set():
-                proc.terminate()
+                                bufsize=1) as proc:
+            for line in proc.stdout:
+                """io.TextIOWrapper(proc.stdout, 
+                                        line_buffering=False,
+                                        write_through=True,
+                                        encoding=None):
+                """
+                if self.exit.is_set():
+                    proc.terminate()
 
-            data = line.strip()
-            if data != '':
-                self.queue.put(data)
+                data = line.strip()
+                if data != '':
+                    self.queue.put(data)
 
     def stop(self):
         log.info("PipeProcess finishing...")
