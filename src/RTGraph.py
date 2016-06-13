@@ -63,9 +63,9 @@ class MainWindow(QtGui.QMainWindow):
         self.ui.pButton_Start.clicked.connect(self.start)
         self.ui.pButton_Stop.clicked.connect(self.stop)
         self.ui.numIntSpinBox.valueChanged.connect(self.acq_proc.reset_buffers)
-        self.ui.numSensorSpinBox.valueChanged.connect(self.acq_proc.set_num_sensors)
         self.ui.intCheckBox.stateChanged.connect(self.sig_int_changed)
         self.ui.sensorLoadbtn.clicked.connect(self.sig_load_sensor_pos)
+        self.ui.setupLoadbtn.clicked.connect(self.sig_load_setup_file)
     
     def sig_load_sensor_pos(self):
         file_path = self.ui.sensorConfFile.text()
@@ -77,6 +77,10 @@ class MainWindow(QtGui.QMainWindow):
     def sig_int_changed(self):
         is_int = self.ui.intCheckBox.isChecked()
         self.acq_proc.set_integration_mode(is_int)
+    
+    def sig_load_setup_file(self):
+        file_path = self.ui.setupGeneralFile.text()
+        self.acq_proc.load_general_setup_file(file_path)
 
     def update_plot(self):
         tt = time.time()
