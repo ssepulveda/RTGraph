@@ -6,13 +6,12 @@ import pyqtgraph as pg
 from ringbuffer2d import RingBuffer2D
 from pipeprocess import PipeProcess
 
-
 class AcqProcessing:
     def __init__(self):
         # USBBoard data format:
         # ADC data is sent in an array of size
         # size = N_uplinks_per_USB * N_channels_per_uplink
-        self.num_sensors = 8*1 # for VATA64 front-end
+        self.num_sensors = 8*64 # for VATA64 front-end
         self.num_integrations = 100
         
         self.integrate = False # no integration mode
@@ -61,7 +60,9 @@ class AcqProcessing:
     def plot_signals_scatter(self):
         data = self.plot_signals_map().ravel()
         intensity = data[self.sensor_ids] / (2**10*self.num_sensors)
-        colors = [pg.intColor(200, alpha=k) for k in intensity/ np.max(intensity) * 100] 
+        #colors = [pg.intColor(200, alpha=int(k)) if k!=np.NaN else 0 for k in intensity/ np.max(intensity) * 100]
+        maxintensity = np.max(intensity)*0.01
+        colors = [pg.intColor(200, alpha=int(k/maxintensity)) if maxintensity>0 else 0 for k in intensity] 
         return intensity, colors
     
     def plot_signals_map(self):
@@ -96,3 +97,20 @@ class AcqProcessing:
             self.queue.get()
         log.info("Buffers cleared")
     
+    def load_pedestals(self, file_path):
+        # load pedestals from csv file
+        print("Loading pedestal file {}".format(file_path))
+        # blabla
+    
+    def load_ADCgain(self, file_path):
+        # load ADC gain from csv file
+        print("Loading ADC gain file {}".format(file_path))
+        # blabla
+    
+    def load_general_setup_file(self, file_path):
+        # load general setup file (txt)
+        # which contains the uplinks enabled and where the csv ped+gain files are
+        #file_path can be loaded from the interface through MainWindow class
+        #file_path is passed by the MainWindow when it starts or when we want to reload it or the pedestal and gain csv files
+        print("Loading setup file file {}".format(file_path))
+        # blabla
