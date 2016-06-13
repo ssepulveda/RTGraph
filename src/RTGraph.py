@@ -34,6 +34,7 @@ class MainWindow(QtGui.QMainWindow):
         self.configure_signals()
         
         self.sig_load_sensor_pos() # Prepare acquisition
+        self.sig_load_setup_file() # initialize pedestals and gains
 
     def configure_plot(self):
         self.ui.plt.setBackground(background=None)
