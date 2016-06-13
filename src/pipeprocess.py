@@ -19,6 +19,7 @@ class PipeProcess(multiprocessing.Process):
         timestamp = time.time()
         with subprocess.Popen([self.cmd,  ] + self.args,
                                 stdout=subprocess.PIPE,
+                                stdin=subprocess.PIPE,
                                 universal_newlines=True,
                                 bufsize=1) as proc:
             for line in proc.stdout:
@@ -28,6 +29,8 @@ class PipeProcess(multiprocessing.Process):
                                         encoding=None):
                 """
                 if self.exit.is_set():
+                    #proc.stdin.write("\n")
+                    #proc.stdin.flush()
                     proc.terminate()
 
                 data = line.strip()

@@ -1,0 +1,18 @@
+# Setup file for live monitoring with RTGraph.py
+# uplinks enabled
+U0 || 1 ||
+U1 || 1 ||
+U2 || 1 ||
+U3 || 1 ||
+U4 || 1 ||
+U5 || 0 ||
+U6 || 0 ||
+U7 || 0 ||
+# set all pedestal values (if 1 set to the value, if 0, takes from pedestal csv file)
+AllPed || 1 ||
+AllPedVal || 512 ||
+PathPedFile ||  ||
+# set all gain values (if 1 set to the value, if 0, takes from gain csv file)
+AllGain || 1 ||
+AllGainVal || 12 ||
+PathGainFile ||  ||
