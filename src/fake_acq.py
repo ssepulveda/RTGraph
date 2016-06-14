@@ -19,7 +19,7 @@ if __name__ == "__main__":
         N = int(sys.argv[1]) # first option of function is number of sensors
     print("Number of sensors:",N)
     max_val = 2**16 - 1
-    freq = 100. # Hz
+    freq = 10. # Hz
     evCounter = 0
     while 1:
         print("{}\t".format(int(evCounter)), end=""),
