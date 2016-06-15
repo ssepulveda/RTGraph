@@ -3,6 +3,8 @@ import logging as log
 import io
 import time
 import subprocess
+import signal
+from signal import signal
 
 class PipeProcess(multiprocessing.Process):
     def __init__(self, result_queue,
@@ -31,6 +33,11 @@ class PipeProcess(multiprocessing.Process):
                 if self.exit.is_set():
                     #proc.stdin.write("\n")
                     #proc.stdin.flush()
+                    log.info("Subprocess finishing...")
+                    proc.send_signal('0x0D') # "ENTER" key
+                    #proc.send_signal(1)
+                    #proc.send_signal('0x30')
+                    #proc.send_signal(signal.SIGTERM)
                     proc.terminate()
 
                 data = line.strip()

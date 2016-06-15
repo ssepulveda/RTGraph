@@ -3,6 +3,7 @@ import numpy as np
 import logging as log
 import pyqtgraph as pg
 import yaml
+import itertools
 
 from ringbuffer2d import RingBuffer2D
 from pipeprocess import PipeProcess
@@ -22,6 +23,7 @@ class AcqProcessing:
         self.queue = multiprocessing.Queue()
         
         self.uplinks_enabled = None
+        self.channels_enabled = None
         self.all_pedestal = 0
         self.all_pedestal_val = 0
         self.path_pedestal_file = ""
@@ -29,7 +31,7 @@ class AcqProcessing:
         self.all_gain_val = 0
         self.path_gain_file = ""
         
-        self.calibration_all_channels = dict([('pedestals',np.empty(self.num_sensors)), ('gains',np.empty(self.num_sensors))])
+        self.calibration_all_channels = dict([('pedestals',np.empty(self.num_sensors_enabled)), ('gains',np.empty(self.num_sensors_enabled))])
         
     def start_acquisition(self, cmd):
         # reset buffers to ensure they have an adequate size
@@ -53,6 +55,9 @@ class AcqProcessing:
         items = [int(kk) for kk in line_items]
         ev_num, ts, intensities = items[0], items[1], items[2:]
         if save:
+            # all ADC values from USBboard are in intensities
+            # takes ADC values selected (channels enabled) with the setup file
+            intensities = list(itertools.compress(intensities, self.channels_enabled)) # ceci prend ~5us
             self.data.append(intensities)
             self.time.append(ts)
             self.evNumber.append(ev_num)
@@ -73,7 +78,7 @@ class AcqProcessing:
     
     def plot_signals_scatter(self):
         data = self.plot_signals_map().ravel()
-        intensity = data[self.sensor_ids] / (2**10*self.num_sensors)
+        intensity = data[self.sensor_ids] / (2**10*self.num_sensors_enabled)
         #colors = [pg.intColor(200, alpha=int(k)) if k!=np.NaN else 0 for k in intensity/ np.max(intensity) * 100]
         maxintensity = np.max(intensity)*0.01
         colors = [pg.intColor(200, alpha=int(k/maxintensity)) if maxintensity>0 else 0 for k in intensity] 
@@ -81,9 +86,9 @@ class AcqProcessing:
     
     def plot_signals_map(self):
         if self.integrate:
-            return np.sum(self.data.get_all(), axis=0).reshape(self.num_sensors,1)
+            return np.sum(self.data.get_all(), axis=0).reshape(self.num_sensors_enabled,1)
         else:
-            return self.data.get_partial().reshape(self.num_sensors,1)
+            return self.data.get_partial().reshape(self.num_sensors_enabled,1)
 
     def set_sensor_pos(self, x_coords, y_coords, sensor_num):
         self.x_coords = x_coords
@@ -102,7 +107,7 @@ class AcqProcessing:
     
     def reset_buffers(self):
         self.data = RingBuffer2D(self.num_integrations,
-                                    cols=self.num_sensors)
+                                    cols=self.num_sensors_enabled)
         self.time = RingBuffer2D(1, cols=1) # Unused at the moment (buffer size is 1)
         self.evNumber = RingBuffer2D(1, cols=1) # Unused at the moment (buffer size is 1)            
         while not self.queue.empty():
@@ -115,13 +120,15 @@ class AcqProcessing:
             return
         # load from csv file
         data = np.genfromtxt(file_path)
+        all_calib = np.empty(self.num_sensors)
         # Format is: uplink, channel, data (ex pedestal, gain)
         for i, line in enumerate(data):
             # checks that the channels int the csv file are correctly ordered
             if int((line[0] % 10) * self.num_channels_per_uplinks + line[1]) != i:
                 log.warning("Loading {} file: Channels must be in the right order!".format(key))
             else:
-                self.calibration_all_channels[key][i] = line[2]
+                all_calib[i] = line[2]
+        self.calibration_all_channels[key] = list(itertools.compress(all_calib, self.channels_enabled))
     
     def load_general_setup_file(self, file_path):
         # load general setup file (txt)
@@ -146,10 +153,14 @@ class AcqProcessing:
         self.all_gain_val = cfg['Gains']['AllGainVal']
         self.path_gain_file =  cfg['Gains']['GainFilePath']
         
+        # updates channels enabled:
+        self.channels_enabled = [enabled for enabled in self.uplinks_enabled for _ in range(self.num_channels_per_uplinks)]
+        
         num_sensors = sum(x > 0 for x in self.uplinks_enabled) * self.num_channels_per_uplinks
         if num_sensors != self.num_sensors_enabled:
             self.num_sensors_enabled = num_sensors
             log.info("Number of sensors enabled changed to {}".format(num_sensors))
+            self.reset_buffers()
         
         if self.all_pedestal:
             if self.all_pedestal_val > 0:
@@ -170,5 +181,5 @@ class AcqProcessing:
         else:
             log.info("Setting gains from file {}".format(self.path_gain_file))
             self.loadCSVfile(self.path_gain_file, 'gains')
-        #print(self.calibration_all_channels)
+        #print(self.channels_enabled)
  
