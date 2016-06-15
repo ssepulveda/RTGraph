@@ -2,6 +2,7 @@ import multiprocessing
 import numpy as np
 import logging as log
 import pyqtgraph as pg
+import yaml
 
 from ringbuffer2d import RingBuffer2D
 from pipeprocess import PipeProcess
@@ -14,7 +15,7 @@ class AcqProcessing:
         self.num_sensors = 8*64 # for VATA64 front-end
         self.num_sensors_enabled = 8*64
         self.num_uplinks = 8
-        self.num_channels_per_uplinls = 64
+        self.num_channels_per_uplinks = 64
         self.num_integrations = 100
         
         self.integrate = False # no integration mode
@@ -109,15 +110,15 @@ class AcqProcessing:
         log.info("Buffers cleared")
     
     def loadCSVfile(self, file_path, key):
-        if not (key=='pedestals' or key=='gains'):
+        if not (key == 'pedestals' or key == 'gains'):
             log.warning("Failed to load csv file: key {} not existing!".format(key))
             return
         # load from csv file
         data = np.genfromtxt(file_path)
         # Format is: uplink, channel, data (ex pedestal, gain)
-        for i,line in enumerate(data):
+        for i, line in enumerate(data):
             # checks that the channels int the csv file are correctly ordered
-            if int((line[0]%10)*self.num_channels_per_uplinls + line[1]) != i:
+            if int((line[0] % 10) * self.num_channels_per_uplinks + line[1]) != i:
                 log.warning("Loading {} file: Channels must be in the right order!".format(key))
             else:
                 self.calibration_all_channels[key][i] = line[2]
@@ -127,39 +128,30 @@ class AcqProcessing:
         # which contains the uplinks enabled and where the csv ped+gain files are
         #file_path can be loaded from the interface through MainWindow class
         #file_path is passed by the MainWindow when it starts or when we want to reload it or the pedestal and gain csv files
-        log.info("Loading setup file file {}".format(file_path))
-        fsetup = open(file_path,'r')
-        for line in fsetup:
-            if not line.startswith("#"):
-                para = line.replace(" ","").split('||')
-                # parse the different parameters
-                if para[0] == "FrontEndBoardConfig": # which uplink to enable
-                    enabled = para[1:]
-                    if enabled[-1]=='\n':
-                        del enabled[-1]
-                    if len(enabled) != 8:
-                        log.warning("FrontEndBoardConfig should have 8 values and not {}! Aborting setup file loading.".format(len(enabled)))
-                        return
-                    self.uplinks_enabled = [int(kk) for kk in enabled]
-                if para[0] == "AllPed": # applies constant pedestal to all channels
-                    self.all_pedestal = int(para[1])
-                if para[0] == "AllPedVal":
-                    self.all_pedestal_val = int(para[1])
-                if para[0] == "PathPedFile":
-                    self.path_pedestal_file = para[1]
-                if para[0] == "AllGain": # applies constant gain to all channels
-                    self.all_gain = int(para[1])
-                if para[0] == "AllGainVal":
-                    self.all_gain_val = int(para[1])
-                if para[0] == "PathGainFile":
-                    self.path_gain_file = para[1]
+        log.info("Loading setup file {}".format(file_path))
         
-        num_sensors = sum(x > 0 for x in self.uplinks_enabled)*self.num_channels_per_uplinls
+        with open(file_path, 'r') as f:
+            cfg = yaml.load(f)
+        
+        if len(cfg['FrontEndBoardConfig']) != 8:
+            og.warning("FrontEndBoardConfig should have 8 values and not {}! Aborting setup file loading.".format(len(enabled)))
+            return
+        
+        self.uplinks_enabled = cfg['FrontEndBoardConfig']
+        self.all_pedestal = cfg['Pedestals']['AllPed']
+        self.all_pedestal_val = cfg['Pedestals']['AllPedVal']
+        self.path_pedestal_file =  cfg['Pedestals']['PedFilePath']
+        
+        self.all_gain = cfg['Gains']['AllGain']
+        self.all_gain_val = cfg['Gains']['AllGainVal']
+        self.path_gain_file =  cfg['Gains']['GainFilePath']
+        
+        num_sensors = sum(x > 0 for x in self.uplinks_enabled) * self.num_channels_per_uplinks
         if num_sensors != self.num_sensors_enabled:
             self.num_sensors_enabled = num_sensors
             log.info("Number of sensors enabled changed to {}".format(num_sensors))
         
-        if self.all_pedestal == 1:
+        if self.all_pedestal:
             if self.all_pedestal_val > 0:
                 log.info("All pedestals set to {}".format(self.all_pedestal_val))
                 self.calibration_all_channels['pedestals'].fill(self.all_pedestal_val)
@@ -167,9 +159,9 @@ class AcqProcessing:
                 log.warning("Cannot set all pedestals to ", self.all_pedestal_val, "!")
         else:
             log.info("Setting pedestals from file {}".format(self.path_pedestal_file))
-            self.loadCSVfile(self.path_pedestal_file,'pedestals')
+            self.loadCSVfile(self.path_pedestal_file, 'pedestals')
         
-        if self.all_gain == 1:
+        if self.all_gain:
             if self.all_gain_val > 0:
                 log.info("All gains set to {}".format(self.all_gain_val))
                 self.calibration_all_channels['gains'].fill(self.all_gain_val)
@@ -177,26 +169,6 @@ class AcqProcessing:
                 log.warning("Cannot set all gains to ", self.all_gain_val, "!")
         else:
             log.info("Setting gains from file {}".format(self.path_gain_file))
-            self.loadCSVfile(self.path_gain_file,'gains')
-        
+            self.loadCSVfile(self.path_gain_file, 'gains')
         #print(self.calibration_all_channels)
-        fsetup.close()
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+ 

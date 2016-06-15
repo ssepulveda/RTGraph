@@ -1,0 +1,16 @@
+# Setup file for live monitoring with RTGraph.py
+# uplinks enabled (1=enabled, 0=disabled)
+FrontEndBoardConfig: [1, 1, 1, 1, 1, 0, 0, 0]
+
+# set all pedestal values (if 1 set to the value, if 0, takes from pedestal csv file)
+Pedestals:
+    AllPed: No
+    AllPedVal: 512
+    PedFilePath: setup_examples/pedestals_csv.csv
+
+# set all gain values (if 1 set to the value, if 0, takes from gain csv file)
+Gains:
+    AllGain: Yes
+    AllGainVal: 12
+    GainFilePath: setup_examples/gain_csv.csv
+
