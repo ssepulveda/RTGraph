@@ -336,7 +336,7 @@ QStatusBar {
         <item>
          <widget class="QLineEdit" name="setupGeneralFile">
           <property name="text">
-           <string>setup_examples/setup_general.txt</string>
+           <string>setup_examples/setup.yaml</string>
           </property>
          </widget>
         </item>
