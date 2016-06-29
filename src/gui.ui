@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>704</width>
-    <height>558</height>
+    <width>999</width>
+    <height>732</height>
    </rect>
   </property>
   <property name="minimumSize">
@@ -298,62 +298,126 @@ QStatusBar {
   </property>
   <widget class="QWidget" name="centralwidget">
    <layout class="QGridLayout" name="gridLayout">
-    <item row="9" column="1">
-     <layout class="QGridLayout" name="Layout_controls2">
-      <item row="0" column="1">
-       <spacer name="horizontalSpacer">
-        <property name="orientation">
-         <enum>Qt::Horizontal</enum>
-        </property>
-        <property name="sizeHint" stdset="0">
-         <size>
-          <width>40</width>
-          <height>20</height>
-         </size>
-        </property>
-       </spacer>
+    <item row="2" column="0">
+     <layout class="QGridLayout" name="Layout_graphs">
+      <item row="4" column="0">
+       <layout class="QHBoxLayout" name="horizontalLayout_5">
+        <item>
+         <widget class="QLabel" name="lblSensorPos">
+          <property name="text">
+           <string>Sensor position file:</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QLineEdit" name="sensorConfFile">
+          <property name="text">
+           <string>sensors_pos.csv</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QPushButton" name="sensorLoadbtn">
+          <property name="text">
+           <string>Load</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <layout class="QHBoxLayout" name="horizontalLayout_10"/>
+        </item>
+        <item>
+         <widget class="QLabel" name="lblSetupGeneral">
+          <property name="text">
+           <string>Setup file:</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QLineEdit" name="setupGeneralFile">
+          <property name="text">
+           <string>setup_examples/setup.yaml</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QPushButton" name="setupLoadbtn">
+          <property name="text">
+           <string>Load</string>
+          </property>
+         </widget>
+        </item>
+       </layout>
       </item>
-      <item row="0" column="0">
-       <widget class="QCheckBox" name="chBox_export">
-        <property name="text">
-         <string>Export to CSV</string>
-        </property>
-       </widget>
-      </item>
-     </layout>
-    </item>
-    <item row="7" column="0" colspan="2">
-     <layout class="QGridLayout" name="Layout_controls">
-      <item row="0" column="1">
-       <widget class="QComboBox" name="cBox_Speed"/>
-      </item>
-      <item row="0" column="0">
-       <widget class="QComboBox" name="cBox_Port"/>
+      <item row="3" column="0">
+       <layout class="QGridLayout" name="Layout_controls">
+        <item row="4" column="2">
+         <layout class="QHBoxLayout" name="horizontalLayout">
+          <item>
+           <widget class="QCheckBox" name="intCheckBox">
+            <property name="text">
+             <string>Integrate over</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QSpinBox" name="numIntSpinBox">
+            <property name="maximum">
+             <number>1000</number>
+            </property>
+            <property name="value">
+             <number>100</number>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QLabel" name="label_2">
+            <property name="text">
+             <string>acquisitions</string>
+            </property>
+           </widget>
+          </item>
+         </layout>
+        </item>
+        <item row="0" column="2">
+         <widget class="QPushButton" name="pButton_Stop">
+          <property name="text">
+           <string>Stop</string>
+          </property>
+         </widget>
+        </item>
+        <item row="0" column="0">
+         <widget class="QPushButton" name="pButton_Start">
+          <property name="minimumSize">
+           <size>
+            <width>0</width>
+            <height>0</height>
+           </size>
+          </property>
+          <property name="text">
+           <string>Start</string>
+          </property>
+         </widget>
+        </item>
+        <item row="4" column="0">
+         <widget class="QLabel" name="label">
+          <property name="text">
+           <string>Command to execute:</string>
+          </property>
+         </widget>
+        </item>
+        <item row="4" column="1">
+         <widget class="QLineEdit" name="cmdLineEdit">
+          <property name="text">
+           <string>/home/lphe/usbBoard/Builds/test.sh</string>
+          </property>
+         </widget>
+        </item>
+       </layout>
       </item>
       <item row="1" column="0">
-       <widget class="QPushButton" name="pButton_Start">
-        <property name="minimumSize">
-         <size>
-          <width>0</width>
-          <height>0</height>
-         </size>
-        </property>
-        <property name="text">
-         <string>Start</string>
-        </property>
-       </widget>
+       <layout class="QVBoxLayout" name="verticalLayout"/>
       </item>
-      <item row="1" column="1">
-       <widget class="QPushButton" name="pButton_Stop">
-        <property name="text">
-         <string>Stop</string>
-        </property>
-       </widget>
-      </item>
-     </layout>
-    </item>
-    <item row="2" column="1">
-     <layout class="QGridLayout" name="Layout_graphs">
       <item row="0" column="0">
        <widget class="GraphicsLayoutWidget" name="plt">
         <property name="autoFillBackground">

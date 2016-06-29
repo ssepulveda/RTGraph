@@ -1,3 +1,6 @@
+# Automatically generated GUI:
+src/gui.py
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
