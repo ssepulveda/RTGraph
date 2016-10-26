@@ -1,15 +1,13 @@
-import multiprocessing
-import sys
-import platform
-
+import argparse
 import logging as log
 import logging.handlers
-import argparse
+import multiprocessing
+import platform
+import sys
 
-from serialProcess import SerialProcess
-from ringBuffer import RingBuffer
-from gui import *
-
+from commons.ringBuffer import RingBuffer
+from processors.Serial import SerialProcess
+from ui.gui import *
 
 TIMEOUT = 1000
 SAMPLES = 100
