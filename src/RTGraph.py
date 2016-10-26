@@ -7,7 +7,7 @@ import sys
 
 from commons.ringBuffer import RingBuffer
 from processors.Serial import SerialProcess
-from ui.gui import *
+from ui.mainWindow import *
 
 TIMEOUT = 1000
 SAMPLES = 100

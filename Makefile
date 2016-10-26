@@ -1,12 +1,13 @@
-all: gui run
+all: gui
 
 gui:
-	pyuic4 gui.ui > gui.py
+	$(MAKE) -C res
 
 run:
-	python3 RTGraph.py
+	python3 src/RTGraph.py
 
 clean:
-	rm -r *.pyc
-	rm -r *.log*
-	rm -r __pycache__
+	rm -rf *.pyc
+	rm -rf *.log*
+	rm -rf src/*.log
+	rm -rf __pycache__
