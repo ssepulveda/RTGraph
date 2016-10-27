@@ -1,13 +1,9 @@
-import argparse
-import logging as log
-import logging.handlers
 import multiprocessing
-import platform
-import sys
 
 from commons.ringBuffer import RingBuffer
 from processors.Serial import SerialProcess
 from ui.mainWindow import *
+from commons.logger import *
 
 TIMEOUT = 1000
 SAMPLES = 100
@@ -41,11 +37,8 @@ class MainWindow(QtGui.QMainWindow):
 
     def configure_timers(self):
         self.timer_plot_update = QtCore.QTimer(self)
-        # self.timer_freq_update = QtCore.QTimer(self)
         QtCore.QObject.connect(self.timer_plot_update,
                                QtCore.SIGNAL('timeout()'), self.update_plot)
-        # QtCore.QObject.connect(self.timer_freq_update,
-        #                       QtCore.SIGNAL('timeout()'), self.update_freq)
 
     def configure_signals(self):
         QtCore.QObject.connect(self.ui.pButton_Start,
@@ -92,35 +85,6 @@ class MainWindow(QtGui.QMainWindow):
         self.sp.stop()
         self.sp.join()
         self.reset_buffers()
-
-
-def start_logging(level):
-    log_format = log.Formatter('%(asctime)s,%(levelname)s,%(message)s')
-    logger = log.getLogger()
-    logger.setLevel(level)
-
-    file_handler = logging.handlers.RotatingFileHandler("RTGraph.log", maxBytes=(10240 * 5), backupCount=2)
-    file_handler.setFormatter(log_format)
-    logger.addHandler(file_handler)
-
-    console_handler = log.StreamHandler(sys.stdout)
-    console_handler.setFormatter(log_format)
-    logger.addHandler(console_handler)
-
-
-def user_info():
-    log.info("Platform: %s", platform.platform())
-    log.info("Path: %s", sys.path[0])
-    log.info("Python: %s", sys.version[0:5])
-
-
-def man():
-    parser = argparse.ArgumentParser(description='RTGraph\nA real time plotting and logging application')
-    parser.add_argument("-l", "--log",
-                        dest="logLevel",
-                        choices=['DEBUG', 'INFO', 'WARNING', 'ERROR', 'CRITICAL'],
-                        help="Set the logging level")
-    return parser
 
 
 if __name__ == '__main__':
