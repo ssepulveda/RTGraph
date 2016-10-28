@@ -13,7 +13,7 @@ OUT_FOLDER = ../src/ui/
 PYUIC = pyuic4
 PYRCC = pyrcc4
 
-PY_UI_FILES = $(UI_FILES:%.ui=%.py)
+PY_UI_FILES = $(UI_FILES:%.ui=%_ui.py)
 PY_RES_FILES = $(RES_FILES:%.qrc=%_rc.py)
 
 all : resources ui
@@ -23,7 +23,7 @@ resources : $(PY_RES_FILES)
 	$(PYRCC) $< -o $(OUT_FOLDER)$@
 
 ui : $(PY_UI_FILES)
-%.py : %.ui
+%_ui.py : %.ui
 	$(PYUIC) $< -o $(OUT_FOLDER)$@
 
 clean :
