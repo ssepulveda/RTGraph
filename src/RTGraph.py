@@ -15,7 +15,6 @@ if __name__ == '__main__':
     user_info()
 
     log.info("Starting RTGraph")
-
     app = QtGui.QApplication(sys.argv)
     win = mainWindow.MainWindow()
     win.show()

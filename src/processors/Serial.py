@@ -1,8 +1,9 @@
 import multiprocessing
+from time import time
 import logging as log
+
 import serial
 from serial.tools import list_ports
-from time import time
 
 
 class SerialProcess(multiprocessing.Process):
@@ -12,28 +13,6 @@ class SerialProcess(multiprocessing.Process):
         self.exit = multiprocessing.Event()
         self.s = serial.Serial()
         log.info("SerialProcess ready")
-
-    @staticmethod
-    def list_ports():
-        return list_ports.comports()
-
-    def get_ports(self):
-        ports = []
-        for port in self.list_ports():
-            ports.append(port[0])
-        return ports
-
-    def get_ports_full(self):
-        ports = []
-        for port in self.list_ports():
-            ports.append(port)
-        return ports
-
-    def is_port_available(self, port):
-        for ports in self.list_ports():
-            if ports[0] == port:
-                return True
-        return False
 
     def open_port(self, port, bd=115200, timeout=0.5):
         self.s.port = port
@@ -68,3 +47,18 @@ class SerialProcess(multiprocessing.Process):
     def stop(self):
         log.info("SerialProcess finishing...")
         self.exit.set()
+
+    @staticmethod
+    def get_serial_ports():
+        found_ports = []
+        for port in list(list_ports.comports()):
+            log.debug("found device {}".format(port))
+            found_ports.append(port[1])
+        return found_ports
+
+    @staticmethod
+    def is_port_available(port):
+        for p in list(list_ports.comports()):
+            if p[1] == port:
+                return True
+        return False

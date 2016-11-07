@@ -30,6 +30,13 @@ class MainWindow(QtGui.QMainWindow):
         self.configure_timers()
         self.configure_signals()
 
+        # populate combo box for serial ports
+        ports = SerialProcess.get_serial_ports()
+        if len(ports) > 0:
+            log.debug("Adding ports, TODO")
+        else:
+            log.warning("No ports found")
+
     def configure_plot(self):
         self.ui.plt.setBackground(background=None)
         self.ui.plt.setAntialiasing(True)
@@ -64,20 +71,15 @@ class MainWindow(QtGui.QMainWindow):
         self.plt1.clear()
         self.plt1.plot(x=self.time.get_all(), y=self.data.get_all(), pen='#2196F3')
 
-    def start(self):
+    def start(self, port):
         log.info("Clicked start")
         self.sp = SerialProcess(self.queue)
-        ports = self.sp.get_ports()
-        log.info(ports)
-        if 0 < len(ports):
-            self.sp.open_port(ports[0])
-            if self.sp.is_port_available(ports[0]):
-                self.sp.start()
-                self.timer_plot_update.start(10)
-            else:
-                log.info("Port is not available")
+        self.sp.open_port(port)
+        if self.sp.is_port_available(port):
+            self.sp.start()
+            self.timer_plot_update.start(10)
         else:
-            log.warning("No ports detected")
+            log.info("Port is not available")
 
     def stop(self):
         log.info("Clicked stop")
