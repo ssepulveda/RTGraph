@@ -32,9 +32,9 @@ class MainWindow(QtGui.QMainWindow):
 
         # populate combo box for serial ports
         speeds = SerialProcess.get_serial_ports_speeds()
+        ports = SerialProcess.get_serial_ports()
         self.ui.cBox_Speed.addItems(speeds)
         self.ui.cBox_Speed.setCurrentIndex(len(speeds) - 1)
-        ports = SerialProcess.get_serial_ports()
         if len(ports) > 0:
             self.ui.cBox_Port.addItems(ports)
         else:
@@ -57,11 +57,11 @@ class MainWindow(QtGui.QMainWindow):
                                QtCore.SIGNAL('clicked()'), self.stop)
 
     def reset_buffers(self):
-            self.data = RingBuffer(SAMPLES)
-            self.time = RingBuffer(SAMPLES)
-            while not self.queue.empty():
-                self.queue.get()
-            log.info("Buffers cleared")
+        self.data = RingBuffer(SAMPLES)
+        self.time = RingBuffer(SAMPLES)
+        while not self.queue.empty():
+            self.queue.get()
+        log.info("Buffers cleared")
 
     def update_plot(self):
         while not self.queue.empty():
@@ -87,6 +87,7 @@ class MainWindow(QtGui.QMainWindow):
     def stop(self):
         log.info("Clicked stop")
         self.timer_plot_update.stop()
-        self.sp.stop()
-        self.sp.join()
-        self.reset_buffers()
+        if self.sp is not None:
+            self.sp.stop()
+            self.sp.join()
+            self.reset_buffers()
