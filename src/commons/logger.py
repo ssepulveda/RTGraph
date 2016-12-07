@@ -27,8 +27,12 @@ def user_info():
 
 def man():
     parser = argparse.ArgumentParser(description='RTGraph\nA real time plotting and logging application')
-    parser.add_argument("-l", "--log",
-                        dest="logLevel",
-                        choices=['DEBUG', 'INFO', 'WARNING', 'ERROR', 'CRITICAL'],
-                        help="Set the logging level")
+    parser.add_argument("-v", "--verbose",
+                        dest="log_level_info",
+                        action='store_true',
+                        help="Enable info messages")
+    parser.add_argument("-vv", "-d" "--veryVerbose",
+                        dest="log_level_debug",
+                        action='store_true',
+                        help="Enable debug messages")
     return parser

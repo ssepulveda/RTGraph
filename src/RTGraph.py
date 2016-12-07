@@ -8,10 +8,12 @@ from commons.logger import *
 if __name__ == '__main__':
     multiprocessing.freeze_support()
     args = man().parse_args()
-    if args.logLevel:
-        start_logging(args.logLevel)
-    else:
+    if args.log_level_info:
         start_logging(log.INFO)
+    elif args.log_level_debug:
+        start_logging(log.DEBUG)
+    else:
+        start_logging(log.WARNING)
     user_info()
 
     log.info("Starting RTGraph")
