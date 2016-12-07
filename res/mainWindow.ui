@@ -315,6 +315,9 @@ QStatusBar {
       </item>
       <item row="0" column="0">
        <widget class="QCheckBox" name="chBox_export">
+        <property name="enabled">
+         <bool>false</bool>
+        </property>
         <property name="text">
          <string>Export to CSV</string>
         </property>
@@ -328,9 +331,16 @@ QStatusBar {
        <widget class="QComboBox" name="cBox_Speed"/>
       </item>
       <item row="0" column="0">
-       <widget class="QComboBox" name="cBox_Port"/>
+       <widget class="QComboBox" name="cBox_Port">
+        <property name="editable">
+         <bool>false</bool>
+        </property>
+        <property name="currentText">
+         <string/>
+        </property>
+       </widget>
       </item>
-      <item row="1" column="0">
+      <item row="2" column="0">
        <widget class="QPushButton" name="pButton_Start">
         <property name="minimumSize">
          <size>
@@ -343,10 +353,29 @@ QStatusBar {
         </property>
        </widget>
       </item>
-      <item row="1" column="1">
+      <item row="2" column="1">
        <widget class="QPushButton" name="pButton_Stop">
         <property name="text">
          <string>Stop</string>
+        </property>
+       </widget>
+      </item>
+      <item row="0" column="2">
+       <widget class="QSpinBox" name="sBox_Samples">
+        <property name="suffix">
+         <string> samples</string>
+        </property>
+        <property name="prefix">
+         <string>Show </string>
+        </property>
+        <property name="minimum">
+         <number>1</number>
+        </property>
+        <property name="maximum">
+         <number>100000</number>
+        </property>
+        <property name="value">
+         <number>500</number>
         </property>
        </widget>
       </item>

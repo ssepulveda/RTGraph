@@ -6,7 +6,6 @@ from processors.Serial import SerialProcess
 from ui.mainWindow_ui import *
 
 TIMEOUT = 1000
-SAMPLES = 10
 
 
 class MainWindow(QtGui.QMainWindow):
@@ -23,7 +22,6 @@ class MainWindow(QtGui.QMainWindow):
         self.sp = None
 
         self.queue = multiprocessing.Queue()
-        self.reset_buffers()
 
         # configures
         self.configure_plot()
@@ -51,14 +49,14 @@ class MainWindow(QtGui.QMainWindow):
                                QtCore.SIGNAL('timeout()'), self.update_plot)
 
     def configure_signals(self):
-        QtCore.QObject.connect(self.ui.pButton_Start,
-                               QtCore.SIGNAL('clicked()'), self.start)
-        QtCore.QObject.connect(self.ui.pButton_Stop,
-                               QtCore.SIGNAL('clicked()'), self.stop)
+        self.ui.pButton_Start.clicked.connect(self.start)
+        self.ui.pButton_Stop.clicked.connect(self.stop)
+        self.ui.sBox_Samples.valueChanged.connect(self.update_sample_size)
 
     def reset_buffers(self):
-        self.data = RingBuffer(SAMPLES)
-        self.time = RingBuffer(SAMPLES)
+        samples = self.ui.sBox_Samples.value()
+        self.data = RingBuffer(samples)
+        self.time = RingBuffer(samples)
         while not self.queue.empty():
             self.queue.get()
         log.info("Buffers cleared")
@@ -75,6 +73,7 @@ class MainWindow(QtGui.QMainWindow):
 
     def start(self):
         log.info("Clicked start")
+        self.reset_buffers()
         port = self.ui.cBox_Port.currentText()
         self.sp = SerialProcess(self.queue)
         self.sp.open_port(port=port, bd=int(self.ui.cBox_Speed.currentText()))
@@ -91,3 +90,9 @@ class MainWindow(QtGui.QMainWindow):
             self.sp.stop()
             self.sp.join()
             self.reset_buffers()
+
+    def update_sample_size(self):
+        log.info("Changing sample size")
+        self.reset_buffers()
+
+
