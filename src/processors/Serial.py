@@ -29,13 +29,11 @@ class SerialProcess(multiprocessing.Process):
                 log.info("Port opened")
                 timestamp = time()
                 while not self.exit.is_set():
-                    """
-                    http://eli.thegreenplace.net/2009/08/07/a-live-data-monitor-with-python-pyqt-and-pyserial/
-                    """
-                    data = self.s.read(1)
-                    data += self.s.read(self.s.inWaiting())
+                    data = self.s.readline()
                     if len(data) > 0:
-                        self.queue.put((data, (time() - timestamp)))
+                        values = data.decode("UTF-8").split(",")
+                        values = [float(v) for v in values]
+                        self.queue.put(((time() - timestamp), values))
                     log.debug(data)
                 log.info("SerialProcess finished")
                 self.s.close()
@@ -53,12 +51,15 @@ class SerialProcess(multiprocessing.Process):
         found_ports = []
         for port in list(list_ports.comports()):
             log.debug("found device {}".format(port))
-            found_ports.append(port[1])
+            found_ports.append(port.device)
         return found_ports
 
-    @staticmethod
-    def is_port_available(port):
-        for p in list(list_ports.comports()):
-            if p[1] == port:
+    def is_port_available(self, port):
+        for p in self.get_serial_ports():
+            if p == port:
                 return True
         return False
+
+    @staticmethod
+    def get_serial_ports_speeds():
+        return [str(v) for v in [1200, 2400, 4800, 9600, 19200, 38400, 57600, 115200]]

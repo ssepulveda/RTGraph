@@ -6,7 +6,7 @@ from processors.Serial import SerialProcess
 from ui.mainWindow_ui import *
 
 TIMEOUT = 1000
-SAMPLES = 100
+SAMPLES = 10
 
 
 class MainWindow(QtGui.QMainWindow):
@@ -31,11 +31,14 @@ class MainWindow(QtGui.QMainWindow):
         self.configure_signals()
 
         # populate combo box for serial ports
+        speeds = SerialProcess.get_serial_ports_speeds()
+        self.ui.cBox_Speed.addItems(speeds)
+        self.ui.cBox_Speed.setCurrentIndex(len(speeds) - 1)
         ports = SerialProcess.get_serial_ports()
         if len(ports) > 0:
-            log.debug("Adding ports, TODO")
+            self.ui.cBox_Port.addItems(ports)
         else:
-            log.warning("No ports found")
+            log.warning("No ports found, TODO")
 
     def configure_plot(self):
         self.ui.plt.setBackground(background=None)
@@ -61,20 +64,20 @@ class MainWindow(QtGui.QMainWindow):
             log.info("Buffers cleared")
 
     def update_plot(self):
-        log.debug("Updating plot")
         while not self.queue.empty():
             data = self.queue.get(False)
-            value = str(data[0]).split(',')
-            self.data.append(float(value[1]))
-            self.time.append(data[1])
+            value = data[1]
+            self.data.append(value[0])
+            self.time.append(data[0])
 
         self.plt1.clear()
         self.plt1.plot(x=self.time.get_all(), y=self.data.get_all(), pen='#2196F3')
 
-    def start(self, port):
+    def start(self):
         log.info("Clicked start")
+        port = self.ui.cBox_Port.currentText()
         self.sp = SerialProcess(self.queue)
-        self.sp.open_port(port)
+        self.sp.open_port(port=port, bd=int(self.ui.cBox_Speed.currentText()))
         if self.sp.is_port_available(port):
             self.sp.start()
             self.timer_plot_update.start(10)
