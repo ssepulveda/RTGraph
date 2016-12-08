@@ -6,6 +6,8 @@ from processors.Serial import SerialProcess
 from ui.mainWindow_ui import *
 
 TIMEOUT = 1000
+""" http://www.gnuplotting.org/tag/palette/ """
+COLORS = ['#0072bd', '#d95319', '#edb120', '#7e2f8e', '#77ac30', '#4dbeee', '#a2142f']
 
 
 class MainWindow(QtGui.QMainWindow):
@@ -82,7 +84,7 @@ class MainWindow(QtGui.QMainWindow):
             self.time.append(data[0])
 
         self.plt1.clear()
-        self.plt1.plot(x=self.time.get_all(), y=self.data.get_all(), pen='#2196F3')
+        self.plt1.plot(x=self.time.get_all(), y=self.data.get_all(), pen=COLORS[0])
 
     def start(self):
         log.info("Clicked start")
