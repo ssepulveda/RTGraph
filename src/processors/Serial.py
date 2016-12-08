@@ -31,9 +31,12 @@ class SerialProcess(multiprocessing.Process):
                 while not self.exit.is_set():
                     data = self.s.readline()
                     if len(data) > 0:
-                        values = data.decode("UTF-8").split(",")
-                        values = [float(v) for v in values]
-                        self.queue.put(((time() - timestamp), values))
+                        try:
+                            values = data.decode("UTF-8").split(",")
+                            values = [float(v) for v in values]
+                            self.queue.put(((time() - timestamp), values))
+                        except:
+                            log.warn("Wrong format? {}".format(data))
                     log.debug(data)
                 log.info("SerialProcess finished")
                 self.s.close()
