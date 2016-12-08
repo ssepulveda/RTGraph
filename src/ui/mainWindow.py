@@ -88,7 +88,10 @@ class MainWindow(QtGui.QMainWindow):
             # detect how many lines are present to plot
             size = len(value)
             if self.lines < size:
-                self.lines = size
+                if size > len(COLORS):
+                    self.lines = len(COLORS)
+                else:
+                    self.lines = size
 
             # store the data in respective buffers
             for idx in range(self.lines):
