@@ -47,7 +47,10 @@ class ArgParser():
             return None
 
     def get_user_port(self):
-        return str(self.parser.user_port)
+        if self.parser.user_port is None:
+            return None
+        else:
+            return str(self.parser.user_port)
 
     def get_user_bd(self):
         return int(self.parser.user_bd)
