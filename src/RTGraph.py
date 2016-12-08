@@ -3,22 +3,22 @@ from PyQt4 import QtGui
 
 from ui import mainWindow
 from commons.logger import *
+from commons.argParser import *
 
 
 if __name__ == '__main__':
     multiprocessing.freeze_support()
-    args = man().parse_args()
-    if args.log_level_info:
-        start_logging(log.INFO)
-    elif args.log_level_debug:
-        start_logging(log.DEBUG)
-    else:
-        start_logging(log.WARNING)
+    args = ArgParser()
+    args.create()
+    args.parse()
     user_info()
 
     log.info("Starting RTGraph")
     app = QtGui.QApplication(sys.argv)
-    win = mainWindow.MainWindow()
+    win = mainWindow.MainWindow(port=args.get_user_port(),
+                                bd=args.get_user_bd(),
+                                samples=args.get_user_samples()
+                                )
     win.show()
     app.exec()
 

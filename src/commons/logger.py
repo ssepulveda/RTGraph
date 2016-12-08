@@ -1,4 +1,3 @@
-import argparse
 import logging as log
 import logging.handlers
 import platform
@@ -23,16 +22,3 @@ def user_info():
     log.info("Platform: %s", platform.platform())
     log.info("Path: %s", sys.path[0])
     log.info("Python: %s", sys.version[0:5])
-
-
-def man():
-    parser = argparse.ArgumentParser(description='RTGraph\nA real time plotting and logging application')
-    parser.add_argument("-v", "--verbose",
-                        dest="log_level_info",
-                        action='store_true',
-                        help="Enable info messages")
-    parser.add_argument("-vv", "-d" "--veryVerbose",
-                        dest="log_level_debug",
-                        action='store_true',
-                        help="Enable debug messages")
-    return parser

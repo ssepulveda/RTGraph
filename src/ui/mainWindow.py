@@ -9,7 +9,7 @@ TIMEOUT = 1000
 
 
 class MainWindow(QtGui.QMainWindow):
-    def __init__(self):
+    def __init__(self, port=None, bd=115200, samples=500):
         QtGui.QMainWindow.__init__(self)
         self.ui = Ui_MainWindow()
         self.ui.setupUi(self)
@@ -30,13 +30,26 @@ class MainWindow(QtGui.QMainWindow):
 
         # populate combo box for serial ports
         speeds = SerialProcess.get_serial_ports_speeds()
-        ports = SerialProcess.get_serial_ports()
         self.ui.cBox_Speed.addItems(speeds)
-        self.ui.cBox_Speed.setCurrentIndex(len(speeds) - 1)
-        if len(ports) > 0:
-            self.ui.cBox_Port.addItems(ports)
+        try:
+            self.ui.cBox_Speed.setCurrentIndex(speeds.index(str(bd)))
+        except:
+            log.warning("Adding rare speed value to the list")
+            self.ui.cBox_Speed.addItem(str(bd))
+            self.ui.cBox_Speed.setCurrentIndex(len(speeds))
+
+        if port is None:
+            ports = SerialProcess.get_serial_ports()
+            if len(ports) > 0:
+                self.ui.cBox_Port.addItems(ports)
+            else:
+                log.warning("No ports found, TODO")
         else:
-            log.warning("No ports found, TODO")
+            log.info("Setting user specified port {}".format(port))
+            self.ui.cBox_Port.addItem(port)
+
+        self.ui.sBox_Samples.setValue(samples)
+
 
     def configure_plot(self):
         self.ui.plt.setBackground(background=None)
