@@ -22,6 +22,7 @@ class MainWindow(QtGui.QMainWindow):
         self.data = None
         self.time = None
         self.sp = None
+        self.lines = 0
 
         self.queue = multiprocessing.Queue()
 
@@ -70,7 +71,9 @@ class MainWindow(QtGui.QMainWindow):
 
     def reset_buffers(self):
         samples = self.ui.sBox_Samples.value()
-        self.data = RingBuffer(samples)
+        self.data = []
+        for tmp in COLORS:
+            self.data.append(RingBuffer(samples))
         self.time = RingBuffer(samples)
         while not self.queue.empty():
             self.queue.get()
@@ -79,12 +82,22 @@ class MainWindow(QtGui.QMainWindow):
     def update_plot(self):
         while not self.queue.empty():
             data = self.queue.get(False)
-            value = data[1]
-            self.data.append(value[0])
             self.time.append(data[0])
+            value = data[1]
+
+            # detect how many lines are present to plot
+            size = len(value)
+            if self.lines < size:
+                self.lines = size
+
+            # store the data in respective buffers
+            for idx in range(self.lines):
+                self.data[idx].append(value[idx])
 
         self.plt1.clear()
-        self.plt1.plot(x=self.time.get_all(), y=self.data.get_all(), pen=COLORS[0])
+        for idx in range(self.lines):
+            self.plt1.plot(x=self.time.get_all(), y=self.data[idx].get_all(), pen=COLORS[idx])
+
 
     def start(self):
         log.info("Clicked start")
@@ -109,5 +122,9 @@ class MainWindow(QtGui.QMainWindow):
     def update_sample_size(self):
         log.info("Changing sample size")
         self.reset_buffers()
+
+    def closeEvent(self, evnt):
+        log.info("Window closed without stopping capture, stopping it")
+        self.stop()
 
 
