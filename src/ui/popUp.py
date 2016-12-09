@@ -3,8 +3,8 @@ from PyQt4 import QtGui
 
 class PopUp:
     @staticmethod
-    def question_yes_no(title, message):
-        ans = QtGui.QMessageBox.question(None,
+    def question_yes_no(parent, title, message):
+        ans = QtGui.QMessageBox.question(parent,
                                          title,
                                          message,
                                          QtGui.QMessageBox.Yes,
@@ -13,3 +13,7 @@ class PopUp:
             return True
         else:
             return False
+
+    @staticmethod
+    def warning(parent, title, message):
+        QtGui.QMessageBox.warning(parent, title, message, QtGui.QMessageBox.Ok)
