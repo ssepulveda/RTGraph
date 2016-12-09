@@ -57,6 +57,9 @@ class MainWindow(QtGui.QMainWindow):
 
         self.ui.sBox_Samples.setValue(samples)
 
+        # enable ui
+        self._enable_ui(True)
+
     def _configure_plot(self):
         self.ui.plt.setBackground(background=None)
         self.ui.plt.setAntialiasing(True)
@@ -114,12 +117,14 @@ class MainWindow(QtGui.QMainWindow):
         if self.sp.open_port(port=port, bd=int(self.ui.cBox_Speed.currentText())):
             self.sp.start()
             self.timer_plot_update.start(10)
+            self._enable_ui(False)
         else:
             log.info("Port is not available")
 
     def stop(self):
         log.info("Clicked stop")
         self.timer_plot_update.stop()
+        self._enable_ui(True)
         if self.sp is not None:
             self.sp.stop()
             self.sp.join()
@@ -128,6 +133,13 @@ class MainWindow(QtGui.QMainWindow):
     def update_sample_size(self):
         log.info("Changing sample size")
         self.reset_buffers()
+
+    def _enable_ui(self, enabled):
+        self.ui.cBox_Port.setEnabled(enabled)
+        self.ui.cBox_Speed.setEnabled(enabled)
+        self.ui.pButton_Start.setEnabled(enabled)
+        # self.ui.chBox_export.setEnabled(enabled)
+        self.ui.pButton_Stop.setEnabled(not enabled)
 
     def closeEvent(self, evnt):
         log.info("Window closed without stopping capture, stopping it")
