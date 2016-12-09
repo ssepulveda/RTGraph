@@ -6,7 +6,7 @@ from processors.Serial import SerialProcess
 from ui.mainWindow_ui import *
 from ui.popUp import PopUp
 
-TIMEOUT = 1000
+JOIN_TIMEOUT_MS = 1000
 PLOT_UPDATE_TIME_MS = 16  # 60 fps
 """ http://www.gnuplotting.org/tag/palette/ """
 COLORS = ['#0072bd', '#d95319', '#edb120', '#7e2f8e', '#77ac30', '#4dbeee', '#a2142f']
@@ -125,7 +125,7 @@ class MainWindow(QtGui.QMainWindow):
         self._enable_ui(True)
         if self.sp is not None and self.sp.is_alive():
             self.sp.stop()
-            self.sp.join()
+            self.sp.join(JOIN_TIMEOUT_MS)
             self.reset_buffers()
 
     def update_sample_size(self):
