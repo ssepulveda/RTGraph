@@ -46,7 +46,7 @@ class MainWindow(QtGui.QMainWindow):
             if len(ports) > 0:
                 self.ui.cBox_Port.addItems(ports)
             else:
-                if PopUp.question_yes_no("No serial ports found", "Connect a serial device to scan again"):
+                if PopUp.question_yes_no(self, "No serial ports found", "Connect a serial device to scan again"):
                     self.__init__(port=port, bd=bd, samples=samples)
                 else:
                     self.close()
@@ -120,6 +120,7 @@ class MainWindow(QtGui.QMainWindow):
             self._enable_ui(False)
         else:
             log.info("Port is not available")
+            PopUp.warning(self, "RTGraph", "Selected port is not available")
 
     def stop(self):
         log.info("Clicked stop")
