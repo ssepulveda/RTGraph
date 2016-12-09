@@ -7,6 +7,7 @@ from ui.mainWindow_ui import *
 from ui.popUp import PopUp
 
 TIMEOUT = 1000
+PLOT_UPDATE_TIME_MS = 16  # 60 fps
 """ http://www.gnuplotting.org/tag/palette/ """
 COLORS = ['#0072bd', '#d95319', '#edb120', '#7e2f8e', '#77ac30', '#4dbeee', '#a2142f']
 
@@ -116,7 +117,7 @@ class MainWindow(QtGui.QMainWindow):
         self.sp = SerialProcess(self.queue)
         if self.sp.open_port(port=port, bd=int(self.ui.cBox_Speed.currentText())):
             self.sp.start()
-            self.timer_plot_update.start(10)
+            self.timer_plot_update.start(PLOT_UPDATE_TIME_MS)
             self._enable_ui(False)
         else:
             log.info("Port is not available")
