@@ -1,9 +1,10 @@
 import multiprocessing
 import logging as log
 
-from commons.ringBuffer import RingBuffer
+from common.ringBuffer import RingBuffer
 from processors.Serial import SerialProcess
 from ui.mainWindow_ui import *
+from ui.popUp import PopUp
 
 TIMEOUT = 1000
 """ http://www.gnuplotting.org/tag/palette/ """
@@ -16,20 +17,19 @@ class MainWindow(QtGui.QMainWindow):
         self.ui = Ui_MainWindow()
         self.ui.setupUi(self)
 
+        # Shared variables, initial values
         self.plt1 = None
         self.timer_plot_update = None
-        self.timer_freq_update = None
         self.data = None
         self.time = None
         self.sp = None
         self.lines = 0
-
         self.queue = multiprocessing.Queue()
 
         # configures
-        self.configure_plot()
-        self.configure_timers()
-        self.configure_signals()
+        self._configure_plot()
+        self._configure_timers()
+        self._configure_signals()
 
         # populate combo box for serial ports
         speeds = SerialProcess.get_serial_ports_speeds()
@@ -46,25 +46,27 @@ class MainWindow(QtGui.QMainWindow):
             if len(ports) > 0:
                 self.ui.cBox_Port.addItems(ports)
             else:
-                log.warning("No ports found, TODO")
+                if PopUp.question_yes_no("No serial ports found", "Connect a serial device to scan again"):
+                    self.__init__(port=port, bd=bd, samples=samples)
+                else:
+                    self.close()
+
         else:
             log.info("Setting user specified port {}".format(port))
             self.ui.cBox_Port.addItem(port)
 
         self.ui.sBox_Samples.setValue(samples)
 
-
-    def configure_plot(self):
+    def _configure_plot(self):
         self.ui.plt.setBackground(background=None)
         self.ui.plt.setAntialiasing(True)
         self.plt1 = self.ui.plt.addPlot(row=1, col=1)
 
-    def configure_timers(self):
+    def _configure_timers(self):
         self.timer_plot_update = QtCore.QTimer(self)
-        QtCore.QObject.connect(self.timer_plot_update,
-                               QtCore.SIGNAL('timeout()'), self.update_plot)
+        self.timer_plot_update.timeout.connect(self.update_plot)
 
-    def configure_signals(self):
+    def _configure_signals(self):
         self.ui.pButton_Start.clicked.connect(self.start)
         self.ui.pButton_Stop.clicked.connect(self.stop)
         self.ui.sBox_Samples.valueChanged.connect(self.update_sample_size)
@@ -82,6 +84,8 @@ class MainWindow(QtGui.QMainWindow):
     def update_plot(self):
         while not self.queue.empty():
             data = self.queue.get(False)
+
+            # add timestamp
             self.time.append(data[0])
             value = data[1]
 
@@ -97,18 +101,17 @@ class MainWindow(QtGui.QMainWindow):
             for idx in range(self.lines):
                 self.data[idx].append(value[idx])
 
+        # plot data
         self.plt1.clear()
         for idx in range(self.lines):
             self.plt1.plot(x=self.time.get_all(), y=self.data[idx].get_all(), pen=COLORS[idx])
-
 
     def start(self):
         log.info("Clicked start")
         self.reset_buffers()
         port = self.ui.cBox_Port.currentText()
         self.sp = SerialProcess(self.queue)
-        self.sp.open_port(port=port, bd=int(self.ui.cBox_Speed.currentText()))
-        if self.sp.is_port_available(port):
+        if self.sp.open_port(port=port, bd=int(self.ui.cBox_Speed.currentText())):
             self.sp.start()
             self.timer_plot_update.start(10)
         else:
@@ -129,5 +132,3 @@ class MainWindow(QtGui.QMainWindow):
     def closeEvent(self, evnt):
         log.info("Window closed without stopping capture, stopping it")
         self.stop()
-
-
