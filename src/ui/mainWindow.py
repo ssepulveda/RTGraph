@@ -116,13 +116,14 @@ class MainWindow(QtGui.QMainWindow):
             self._enable_ui(False)
         else:
             log.info("Port is not available")
-            PopUp.warning(self, "RTGraph", "Selected port is not available")
+            PopUp.warning(self, "RTGraph", "Selected port \"{}\"is not available"
+                          .format(self.ui.cBox_Port.currentText()))
 
     def stop(self):
         log.info("Clicked stop")
         self.timer_plot_update.stop()
         self._enable_ui(True)
-        if self.sp is not None:
+        if self.sp is not None and self.sp.is_alive():
             self.sp.stop()
             self.sp.join()
             self.reset_buffers()
@@ -139,5 +140,6 @@ class MainWindow(QtGui.QMainWindow):
         self.ui.pButton_Stop.setEnabled(not enabled)
 
     def closeEvent(self, evnt):
-        log.info("Window closed without stopping capture, stopping it")
-        self.stop()
+        if self.sp is not None and self.sp.is_alive():
+            log.info("Window closed without stopping capture, stopping it")
+            self.stop()
