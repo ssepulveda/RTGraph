@@ -28,45 +28,28 @@
   <widget class="QWidget" name="centralwidget">
    <layout class="QGridLayout" name="gridLayout">
     <item row="9" column="1">
-     <layout class="QGridLayout" name="Layout_controls2">
-      <item row="0" column="1">
-       <spacer name="horizontalSpacer">
-        <property name="orientation">
-         <enum>Qt::Horizontal</enum>
-        </property>
-        <property name="sizeHint" stdset="0">
-         <size>
-          <width>40</width>
-          <height>20</height>
-         </size>
-        </property>
-       </spacer>
-      </item>
-      <item row="0" column="0">
-       <widget class="QCheckBox" name="chBox_export">
-        <property name="enabled">
-         <bool>false</bool>
-        </property>
-        <property name="text">
-         <string>Export to CSV</string>
-        </property>
-       </widget>
-      </item>
-     </layout>
+     <layout class="QGridLayout" name="Layout_controls2"/>
     </item>
     <item row="7" column="0" colspan="2">
      <layout class="QGridLayout" name="Layout_controls">
-      <item row="0" column="1">
-       <widget class="QComboBox" name="cBox_Speed"/>
-      </item>
       <item row="0" column="0">
        <widget class="QComboBox" name="cBox_Port">
         <property name="editable">
-         <bool>false</bool>
+         <bool>true</bool>
         </property>
        </widget>
       </item>
       <item row="2" column="0">
+       <widget class="QComboBox" name="cBox_Speed"/>
+      </item>
+      <item row="2" column="2">
+       <widget class="QPushButton" name="pButton_Stop">
+        <property name="text">
+         <string>Stop</string>
+        </property>
+       </widget>
+      </item>
+      <item row="0" column="2">
        <widget class="QPushButton" name="pButton_Start">
         <property name="minimumSize">
          <size>
@@ -79,14 +62,7 @@
         </property>
        </widget>
       </item>
-      <item row="2" column="1">
-       <widget class="QPushButton" name="pButton_Stop">
-        <property name="text">
-         <string>Stop</string>
-        </property>
-       </widget>
-      </item>
-      <item row="0" column="2">
+      <item row="0" column="1">
        <widget class="QSpinBox" name="sBox_Samples">
         <property name="suffix">
          <string> samples</string>
@@ -102,6 +78,16 @@
         </property>
         <property name="value">
          <number>500</number>
+        </property>
+       </widget>
+      </item>
+      <item row="2" column="1">
+       <widget class="QCheckBox" name="chBox_export">
+        <property name="enabled">
+         <bool>false</bool>
+        </property>
+        <property name="text">
+         <string>Export to CSV</string>
         </property>
        </widget>
       </item>

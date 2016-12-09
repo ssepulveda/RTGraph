@@ -46,11 +46,6 @@ class MainWindow(QtGui.QMainWindow):
             ports = SerialProcess.get_serial_ports()
             if len(ports) > 0:
                 self.ui.cBox_Port.addItems(ports)
-            else:
-                if PopUp.question_yes_no(self, "No serial ports found", "Connect a serial device to scan again"):
-                    self.__init__(port=port, bd=bd, samples=samples)
-                else:
-                    self.close()
 
         else:
             log.info("Setting user specified port {}".format(port))
