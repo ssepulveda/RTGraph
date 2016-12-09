@@ -20,10 +20,10 @@ class SerialProcess(multiprocessing.Process):
         self.s.stopbits = serial.STOPBITS_ONE
         self.s.bytesize = serial.EIGHTBITS
         self.s.timeout = timeout
-        return self.is_port_available(self.s.port)
+        return self._is_port_available(self.s.port)
 
     def run(self):
-        if self.is_port_available(self.s.port):
+        if self._is_port_available(self.s.port):
             if not self.s.isOpen():
                 self.s.open()
                 log.info("Port opened")
@@ -57,7 +57,7 @@ class SerialProcess(multiprocessing.Process):
             found_ports.append(port.device)
         return found_ports
 
-    def is_port_available(self, port):
+    def _is_port_available(self, port):
         for p in self.get_serial_ports():
             if p == port:
                 return True
