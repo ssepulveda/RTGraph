@@ -2,8 +2,7 @@ import multiprocessing
 from PyQt4 import QtGui
 
 from ui import mainWindow
-from commons.logger import *
-from commons.argParser import *
+from common.argParser import *
 
 
 if __name__ == '__main__':
@@ -11,7 +10,6 @@ if __name__ == '__main__':
     args = ArgParser()
     args.create()
     args.parse()
-    user_info()
 
     log.info("Starting RTGraph")
     app = QtGui.QApplication(sys.argv)

@@ -1,8 +1,8 @@
 import argparse
-from commons.logger import *
+from common.logger import *
 
-class ArgParser():
 
+class ArgParser:
     def __init__(self):
         self.parser = None
 
@@ -43,7 +43,7 @@ class ArgParser():
         if self.parser is not None:
             self._parse_log_level()
         else:
-            log.warn("Parser was not created !")
+            log.warning("Parser was not created !")
             return None
 
     def get_user_port(self):
@@ -60,8 +60,8 @@ class ArgParser():
 
     def _parse_log_level(self):
         if self.parser.log_level_info:
-            start_logging(log.INFO)
+            Logger(log.INFO)
         elif self.parser.log_level_debug:
-            start_logging(log.DEBUG)
+            Logger(log.DEBUG)
         else:
-            start_logging(log.WARNING)
+            Logger(log.WARNING)
