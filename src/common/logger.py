@@ -1,7 +1,8 @@
 import logging as log
 import logging.handlers
-import platform
 import sys
+
+from common.architecture import Architecture
 
 
 class Logger:
@@ -22,6 +23,6 @@ class Logger:
 
 
 def _show_user_info():
-    log.info("Platform: %s", platform.platform())
-    log.info("Path: %s", sys.path[0])
-    log.info("Python: %s", sys.version[0:5])
+    log.info("Platform: %s", Architecture.get_os_string())
+    log.info("Path: %s", Architecture.get_path())
+    log.info("Python: %s", Architecture.get_python_version())
