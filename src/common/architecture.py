@@ -27,7 +27,15 @@ class Architecture:
 
     @staticmethod
     def get_python_version():
-        return sys.version[0:5]
+        version = sys.version_info
+        return str("{}.{}.{}".format(version[0], version[1], version[2]))
+
+    @staticmethod
+    def is_python_version(major, minor=0):
+        version = sys.version_info
+        if version[0] == major and version[1] >= minor:
+            return True
+        return False
 
 
 class OSType(Enum):
