@@ -116,7 +116,7 @@ class MainWindow(QtGui.QMainWindow):
             self._enable_ui(False)
         else:
             log.info("Port is not available")
-            PopUp.warning(self, "RTGraph", "Selected port \"{}\"is not available"
+            PopUp.warning(self, "RTGraph", "Selected port \"{}\" is not available"
                           .format(self.ui.cBox_Port.currentText()))
 
     def stop(self):
