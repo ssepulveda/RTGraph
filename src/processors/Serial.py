@@ -2,6 +2,9 @@ import multiprocessing
 from time import time
 import logging as log
 
+from common.architecture import Architecture
+from common.architecture import OSType
+
 import serial
 from serial.tools import list_ports
 
@@ -51,11 +54,15 @@ class SerialProcess(multiprocessing.Process):
 
     @staticmethod
     def get_serial_ports():
-        found_ports = []
-        for port in list(list_ports.comports()):
-            log.debug("found device {}".format(port))
-            found_ports.append(port.device)
-        return found_ports
+        if Architecture.get_os() is OSType.macosx:
+            import glob
+            return glob.glob("/dev/tty.*")
+        else:
+            found_ports = []
+            for port in list(list_ports.comports()):
+                log.debug("found device {}".format(port))
+                found_ports.append(port.device)
+            return found_ports
 
     def _is_port_available(self, port):
         for p in self.get_serial_ports():
