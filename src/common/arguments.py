@@ -8,13 +8,13 @@ class ArgParser:
 
     def create(self):
         parser = argparse.ArgumentParser(description='RTGraph\nA real time plotting and logging application')
-        parser.add_argument("-v", "--verbose",
+        parser.add_argument("-i", "--info",
                             dest="log_level_info",
                             action='store_true',
                             help="Enable info messages"
                             )
 
-        parser.add_argument("-d", "-vv",
+        parser.add_argument("-v", "-d", "--debug",
                             dest="log_level_debug",
                             action='store_true',
                             help="Enable debug messages"

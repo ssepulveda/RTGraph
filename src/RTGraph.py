@@ -2,7 +2,7 @@ import multiprocessing
 from PyQt4 import QtGui
 
 from ui import mainWindow
-from common.argParser import *
+from common.arguments import *
 from common.architecture import Architecture
 
 MINIMAL_PYTHON_VERSION_MAJOR = 3
