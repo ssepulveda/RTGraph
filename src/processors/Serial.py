@@ -11,6 +11,11 @@ from serial.tools import list_ports
 
 class SerialProcess(multiprocessing.Process):
     def __init__(self, result_queue):
+        """
+        Initialises values for process.
+        :param result_queue: A queue where the obtained data will be appended.
+        :type result_queue: multiprocessing queue
+        """
         multiprocessing.Process.__init__(self)
         self._result_queue = result_queue
         self._exit = multiprocessing.Event()
@@ -18,6 +23,16 @@ class SerialProcess(multiprocessing.Process):
         log.info("SerialProcess ready")
 
     def open_port(self, port, bd=115200, timeout=0.5):
+        """
+        Opens a specified serial port.
+        :param port: Serial port name.
+        :type port: basestring
+        :param bd: Baud rate, in bps, to connect to port.
+        :type bd: int
+        :param timeout: Sets the general connection timeout.
+        :type timeout: float
+        :return: True if the port is available.
+        """
         self._serial.port = port
         self._serial.baudrate = bd
         self._serial.stopbits = serial.STOPBITS_ONE
@@ -26,6 +41,13 @@ class SerialProcess(multiprocessing.Process):
         return self._is_port_available(self._serial.port)
 
     def run(self):
+        """
+        Reads the serial port expecting CSV until a stop call is made.
+        The expected format is comma (",") separated values, and a new line (CRLF or LF) as a new row.
+        While running, it will parse CSV data convert each value to float and added to a queue.
+        If incoming data from serial port can't be converted to float, that data will be discarded.
+        :return:
+        """
         if self._is_port_available(self._serial.port):
             if not self._serial.isOpen():
                 self._serial.open()
@@ -49,11 +71,19 @@ class SerialProcess(multiprocessing.Process):
             log.warning("Port is not available")
 
     def stop(self):
+        """
+        Signals the process to stop acquiring data.
+        :return:
+        """
         log.info("SerialProcess finishing...")
         self._exit.set()
 
     @staticmethod
     def get_serial_ports():
+        """
+        Gets a list of the available serial ports.
+        :return: List of available serial ports.
+        """
         if Architecture.get_os() is OSType.macosx:
             import glob
             return glob.glob("/dev/tty.*")
@@ -65,10 +95,19 @@ class SerialProcess(multiprocessing.Process):
             return found_ports
 
     @staticmethod
-    def get_serial_ports_speeds():
+    def get_serial_ports_baudrates():
+        """
+        Gets a list of the common serial baud rates, in bps.
+        :return: List of the common baud rates, in bps.
+        """
         return [str(v) for v in [1200, 2400, 4800, 9600, 19200, 38400, 57600, 115200]]
 
     def _is_port_available(self, port):
+        """
+        Checks is the port is currently connected to the host.
+        :param port: Port name to be verified.
+        :return: True if the port is connected to the host.
+        """
         for p in self.get_serial_ports():
             if p == port:
                 return True

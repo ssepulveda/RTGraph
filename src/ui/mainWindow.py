@@ -14,6 +14,15 @@ COLORS = ['#0072bd', '#d95319', '#edb120', '#7e2f8e', '#77ac30', '#4dbeee', '#a2
 
 class MainWindow(QtGui.QMainWindow):
     def __init__(self, port=None, bd=115200, samples=500):
+        """
+        Initializes values for the UI.
+        :param port: Default port name to be used. It will also disable scanning available ports.
+        :type port: basestring
+        :param bd: Default baud rate to be used. It will be added to the common baud rate list if not available.
+        :type bd: int
+        :param samples: Default samples per second to be shown in the plot.
+        :type samples: int
+        """
         QtGui.QMainWindow.__init__(self)
         self.ui = Ui_MainWindow()
         self.ui.setupUi(self)
@@ -33,7 +42,7 @@ class MainWindow(QtGui.QMainWindow):
         self._configure_signals()
 
         # populate combo box for serial ports
-        speeds = SerialProcess.get_serial_ports_speeds()
+        speeds = SerialProcess.get_serial_ports_baudrates()
         self.ui.cBox_Speed.addItems(speeds)
         try:
             self.ui.cBox_Speed.setCurrentIndex(speeds.index(str(bd)))
@@ -57,6 +66,11 @@ class MainWindow(QtGui.QMainWindow):
         self._enable_ui(True)
 
     def start(self):
+        """
+        Starts the acquisition of the selected serial port.
+        This function is connected to the clicked signal of the Start button.
+        :return:
+        """
         log.info("Clicked start")
         self._reset_buffers()
         port = self.ui.cBox_Port.currentText()
@@ -71,6 +85,11 @@ class MainWindow(QtGui.QMainWindow):
                           .format(self.ui.cBox_Port.currentText()))
 
     def stop(self):
+        """
+        Stops the acquisition of the selected serial port.
+        This function is connected to the clicked signal of the Stop button.
+        :return:
+        """
         log.info("Clicked stop")
         self._timer_plot.stop()
         self._enable_ui(True)
@@ -80,11 +99,23 @@ class MainWindow(QtGui.QMainWindow):
             self._reset_buffers()
 
     def closeEvent(self, evnt):
+        """
+        Overrides the QTCloseEvent.
+        This function is connected to the clicked signal of the close button of the window.
+        :param evnt: QT evnt.
+        :return:
+        """
         if self._adquisition_process is not None and self._adquisition_process.is_alive():
             log.info("Window closed without stopping capture, stopping it")
             self.stop()
 
     def _enable_ui(self, enabled):
+        """
+        Enables or disables the UI elements of the window.
+        :param enabled: The value to be set at the enabled characteristic of the UI elements.
+        :type enabled: bool
+        :return:
+        """
         self.ui.cBox_Port.setEnabled(enabled)
         self.ui.cBox_Speed.setEnabled(enabled)
         self.ui.pButton_Start.setEnabled(enabled)
@@ -92,21 +123,37 @@ class MainWindow(QtGui.QMainWindow):
         self.ui.pButton_Stop.setEnabled(not enabled)
 
     def _configure_plot(self):
+        """
+        Configures specific elements of the PyQtGraph plots.
+        :return:
+        """
         self.ui.plt.setBackground(background=None)
         self.ui.plt.setAntialiasing(True)
         self._plt = self.ui.plt.addPlot(row=1, col=1)
         self._plt.setLabel('bottom', 'Time', 's')
 
     def _configure_timers(self):
+        """
+        Configures specific elements of the QTimers.
+        :return:
+        """
         self._timer_plot = QtCore.QTimer(self)
         self._timer_plot.timeout.connect(self._update_plot)
 
     def _configure_signals(self):
+        """
+        Configures the connections between signals and UI elements.
+        :return:
+        """
         self.ui.pButton_Start.clicked.connect(self.start)
         self.ui.pButton_Stop.clicked.connect(self.stop)
         self.ui.sBox_Samples.valueChanged.connect(self._update_sample_size)
 
     def _reset_buffers(self):
+        """
+        Set up/clear the internal buffers used to store and display the signals.
+        :return:
+        """
         samples = self.ui.sBox_Samples.value()
         self._data_buffers = []
         for tmp in COLORS:
@@ -117,10 +164,20 @@ class MainWindow(QtGui.QMainWindow):
         log.info("Buffers cleared")
 
     def _update_sample_size(self):
+        """
+        Updates the sample size of the plot.
+        This function is connected to the valueChanged signal of the sample Spin Box.
+        :return:
+        """
         log.info("Changing sample size")
         self._reset_buffers()
 
     def _update_plot(self):
+        """
+        Updates and redraws the graphics in the plot.
+        This function us connected to the timeout signal of a QTimer.
+        :return:
+        """
         while not self.queue.empty():
             data = self.queue.get(False)
 

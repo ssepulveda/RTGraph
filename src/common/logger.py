@@ -23,6 +23,6 @@ class Logger:
 
     @staticmethod
     def _show_user_info():
-        log.info("Platform: %s", Architecture.get_os_string())
+        log.info("Platform: %s", Architecture.get_os_name())
         log.info("Path: %s", Architecture.get_path())
         log.info("Python: %s", Architecture.get_python_version())
