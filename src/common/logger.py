@@ -19,10 +19,10 @@ class Logger:
         console_handler.setFormatter(log_format)
         logger.addHandler(console_handler)
 
-        _show_user_info()
+        self._show_user_info()
 
-
-def _show_user_info():
-    log.info("Platform: %s", Architecture.get_os_string())
-    log.info("Path: %s", Architecture.get_path())
-    log.info("Python: %s", Architecture.get_python_version())
+    @staticmethod
+    def _show_user_info():
+        log.info("Platform: %s", Architecture.get_os_string())
+        log.info("Path: %s", Architecture.get_path())
+        log.info("Python: %s", Architecture.get_python_version())
