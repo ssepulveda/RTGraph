@@ -95,6 +95,7 @@ class MainWindow(QtGui.QMainWindow):
         self.ui.plt.setBackground(background=None)
         self.ui.plt.setAntialiasing(True)
         self._plt = self.ui.plt.addPlot(row=1, col=1)
+        self._plt.setLabel('bottom', 'Time', 's')
 
     def _configure_timers(self):
         self._timer_plot = QtCore.QTimer(self)
