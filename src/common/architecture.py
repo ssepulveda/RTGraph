@@ -69,7 +69,6 @@ class OSType(Enum):
     """
     Enum to list OS types.
     """
-
     unknown = 0
     linux = 1
     macosx = 2

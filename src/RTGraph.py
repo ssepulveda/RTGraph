@@ -11,9 +11,9 @@ MINIMAL_PYTHON_VERSION_MINOR = 2
 
 if __name__ == '__main__':
     multiprocessing.freeze_support()
-    args = ArgParser()
+    args = Arguments()
     args.create()
-    args.parse()
+    args.set_user_log_level()
 
     app = QtGui.QApplication(sys.argv)
     if Architecture.is_python_version(MINIMAL_PYTHON_VERSION_MAJOR, minor=MINIMAL_PYTHON_VERSION_MINOR):
