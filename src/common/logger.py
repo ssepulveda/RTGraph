@@ -29,6 +29,18 @@ class Logger:
         self._show_user_info()
 
     @staticmethod
+    def d(tag, msg):
+        logging.debug("[{}] {}".format(str(tag), str(msg)))
+
+    @staticmethod
+    def i(tag, msg):
+        logging.info("[{}] {}".format(str(tag), str(msg)))
+
+    @staticmethod
+    def w(tag, msg):
+        logging.warning("[{}] {}".format(str(tag), str(msg)))
+
+    @staticmethod
     def _show_user_info():
         """
         Logs in info level architecture related information.

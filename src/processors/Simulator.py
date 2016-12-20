@@ -1,9 +1,12 @@
 import multiprocessing
 from time import time
 from time import sleep
-import logging as log
+from common.logger import Logger as Log
 
 import numpy as np
+
+
+TAG = "Simulator"
 
 
 class SimulatorProcess(multiprocessing.Process):
@@ -17,7 +20,7 @@ class SimulatorProcess(multiprocessing.Process):
         self._result_queue = result_queue
         self._exit = multiprocessing.Event()
         self._period = None
-        log.info("Simulator ready")
+        Log.i(TAG, "Process Ready")
 
     def open(self, port=None, speed=0.002, timeout=0.5):
         """
@@ -31,7 +34,7 @@ class SimulatorProcess(multiprocessing.Process):
         :return: True if the port is available.
         """
         self._period = float(speed)
-        log.info("Using sample rate at {}".format(self._period))
+        Log.i(TAG, "Using sample rate at {}".format(self._period))
         return True
 
     def run(self):
@@ -42,22 +45,23 @@ class SimulatorProcess(multiprocessing.Process):
         If incoming data from serial port can't be converted to float, that data will be discarded.
         :return:
         """
+        Log.i(TAG, "Process starting...")
         timestamp = time()
         sin_coef = 2 * np.pi
         while not self._exit.is_set():
             stamp = time() - timestamp
             data = [np.sin(sin_coef * stamp)]
-            log.debug(data)
+            Log.d(TAG, data)
             self._result_queue.put((stamp, data))
             sleep(self._period)
-        log.info("Simulator finished")
+        Log.i(TAG, "Process finished")
 
     def stop(self):
         """
         Signals the process to stop acquiring data.
         :return:
         """
-        log.info("Simulator finishing...")
+        Log.i(TAG, "Process finishing...")
         self._exit.set()
 
     @staticmethod
@@ -66,7 +70,7 @@ class SimulatorProcess(multiprocessing.Process):
         Gets a list of the available serial ports.
         :return: List of available serial ports.
         """
-        return ["Simulator"]
+        return ["Sine Simulator"]
 
     @staticmethod
     def get_speeds():

@@ -1,12 +1,15 @@
 import multiprocessing
 from time import time
-import logging as log
 
+from common.logger import Logger as Log
 from common.architecture import Architecture
 from common.architecture import OSType
 
 import serial
 from serial.tools import list_ports
+
+
+TAG = "Serial"
 
 
 class SerialProcess(multiprocessing.Process):
@@ -20,7 +23,7 @@ class SerialProcess(multiprocessing.Process):
         self._result_queue = result_queue
         self._exit = multiprocessing.Event()
         self._serial = serial.Serial()
-        log.info("SerialProcess ready")
+        Log.i(TAG, "Process ready")
 
     def open(self, port, speed=115200, timeout=0.5):
         """
@@ -48,34 +51,35 @@ class SerialProcess(multiprocessing.Process):
         If incoming data from serial port can't be converted to float, that data will be discarded.
         :return:
         """
+        Log.i(TAG, "Process starting...")
         if self._is_port_available(self._serial.port):
             if not self._serial.isOpen():
                 self._serial.open()
-                log.info("Port opened")
+                Log.i(TAG, "Port opened")
                 timestamp = time()
                 while not self._exit.is_set():
                     data = self._serial.readline()
+                    Log.d(TAG, data)
                     if len(data) > 0:
                         try:
                             values = data.decode("UTF-8").split(",")
                             values = [float(v) for v in values]
                             self._result_queue.put(((time() - timestamp), values))
                         except:
-                            log.warning("Wrong format? {}".format(data))
-                    log.debug(data)
-                log.info("SerialProcess finished")
+                            Log.w(TAG, "Wrong format? {}".format(data))
+                Log.i(TAG, "Process finished")
                 self._serial.close()
             else:
-                log.warning("Port is not opened")
+                Log.w(TAG, "Port is not opened")
         else:
-            log.warning("Port is not available")
+            Log.w(TAG, "Port is not available")
 
     def stop(self):
         """
         Signals the process to stop acquiring data.
         :return:
         """
-        log.info("SerialProcess finishing...")
+        Log.i(TAG, "Process finishing...")
         self._exit.set()
 
     @staticmethod
@@ -90,7 +94,7 @@ class SerialProcess(multiprocessing.Process):
         else:
             found_ports = []
             for port in list(list_ports.comports()):
-                log.debug("found device {}".format(port))
+                Log.d(TAG, "found device {}".format(port))
                 found_ports.append(port.device)
             return found_ports
 

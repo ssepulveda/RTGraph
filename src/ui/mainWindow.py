@@ -1,7 +1,7 @@
 import multiprocessing
-import logging as log
 from enum import Enum
 
+from common.logger import Logger as Log
 from common.ringBuffer import RingBuffer
 from processors.Serial import SerialProcess
 from processors.Simulator import SimulatorProcess
@@ -13,6 +13,7 @@ PLOT_UPDATE_TIME_MS = 16  # 60 fps
 """ http://www.gnuplotting.org/tag/palette/ """
 COLORS = ['#0072bd', '#d95319', '#edb120', '#7e2f8e', '#77ac30', '#4dbeee', '#a2142f']
 SOURCES = ["Simulator", "Serial"]
+TAG = "MainWindow"
 
 
 class MainWindow(QtGui.QMainWindow):
@@ -59,7 +60,7 @@ class MainWindow(QtGui.QMainWindow):
         This function is connected to the clicked signal of the Start button.
         :return:
         """
-        log.info("Clicked start")
+        Log.i(TAG, "Clicked start")
         self._reset_buffers()
         port = self.ui.cBox_Port.currentText()
 
@@ -72,7 +73,7 @@ class MainWindow(QtGui.QMainWindow):
             self._timer_plot.start(PLOT_UPDATE_TIME_MS)
             self._enable_ui(False)
         else:
-            log.info("Port is not available")
+            Log.i(TAG, "Port is not available")
             PopUp.warning(self, "RTGraph", "Selected port \"{}\" is not available"
                           .format(self.ui.cBox_Port.currentText()))
 
@@ -82,7 +83,7 @@ class MainWindow(QtGui.QMainWindow):
         This function is connected to the clicked signal of the Stop button.
         :return:
         """
-        log.info("Clicked stop")
+        Log.i(TAG, "Clicked stop")
         self._timer_plot.stop()
         self._enable_ui(True)
         if self._adquisition_process is not None and self._adquisition_process.is_alive():
@@ -98,7 +99,7 @@ class MainWindow(QtGui.QMainWindow):
         :return:
         """
         if self._adquisition_process is not None and self._adquisition_process.is_alive():
-            log.info("Window closed without stopping capture, stopping it")
+            Log.i(TAG, "Window closed without stopping capture, stopping it")
             self.stop()
 
     def _enable_ui(self, enabled):
@@ -154,7 +155,7 @@ class MainWindow(QtGui.QMainWindow):
         self._time_buffer = RingBuffer(samples)
         while not self.queue.empty():
             self.queue.get()
-        log.info("Buffers cleared")
+        Log.i(TAG, "Buffers cleared")
 
     def _update_sample_size(self):
         """
@@ -162,7 +163,7 @@ class MainWindow(QtGui.QMainWindow):
         This function is connected to the valueChanged signal of the sample Spin Box.
         :return:
         """
-        log.info("Changing sample size")
+        Log.i(TAG, "Changing sample size")
         self._reset_buffers()
 
     def _update_plot(self):
@@ -201,12 +202,12 @@ class MainWindow(QtGui.QMainWindow):
         This function is connected to the indexValueChanged signal of the Source ComboBox.
         :return:
         """
+        Log.i(TAG, "Scanning source {}".format(self._get_source().name))
         # clear boxes before adding new
         self.ui.cBox_Port.clear()
         self.ui.cBox_Speed.clear()
 
         if self._get_source() == SourceType.serial:
-            log.info("Scanning Serial source")
             speeds = SerialProcess.get_speeds()
             self.ui.cBox_Speed.addItems(speeds)
             self.ui.cBox_Speed.setCurrentIndex(len(speeds) - 1)
@@ -214,11 +215,10 @@ class MainWindow(QtGui.QMainWindow):
             if len(ports) > 0:
                 self.ui.cBox_Port.addItems(ports)
         elif self._get_source() == SourceType.simulator:
-            log.info("Scanning Simulator source")
             self.ui.cBox_Speed.addItems(SimulatorProcess.get_speeds())
             self.ui.cBox_Port.addItems(SimulatorProcess.get_ports())
         else:
-            log.warning("Unknown source selected")
+            Log.w(TAG, "Unknown source selected")
 
     def _get_source(self):
         """
