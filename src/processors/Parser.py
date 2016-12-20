@@ -8,13 +8,14 @@ TAG = "Parser"
 
 
 class ParserProcess(multiprocessing.Process):
-    def __init__(self, result_queue, split=",", timeout=0.05):
+    def __init__(self, data_queue, store_reference=None, split=",", timeout=0.05):
         multiprocessing.Process.__init__(self)
         self._exit = multiprocessing.Event()
         self._in_queue = multiprocessing.Queue()
-        self._out_queue = result_queue
+        self._out_queue = data_queue
         self._timeout = timeout
         self._split = split
+        self._store_reference = store_reference
         Log.d(TAG, "Process ready")
 
     def add(self, txt):
@@ -40,6 +41,8 @@ class ParserProcess(multiprocessing.Process):
                 values = [float(v) for v in values]
                 Log.d(TAG, values)
                 self._out_queue.put((time, values))
+                if self._store_reference is not None:
+                    self._store_reference.add(time, values)
             except:
                 Log.w(TAG, "Wrong format? raw: {}".format(line.strip()))
 

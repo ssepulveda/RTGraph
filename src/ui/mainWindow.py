@@ -6,6 +6,7 @@ from common.ringBuffer import RingBuffer
 from processors.Serial import SerialProcess
 from processors.Simulator import SimulatorProcess
 from processors.Parser import ParserProcess
+from processors.Csv import CSVProcess
 from ui.mainWindow_ui import *
 from ui.popUp import PopUp
 
@@ -39,6 +40,7 @@ class MainWindow(QtGui.QMainWindow):
         self._time_buffer = None
         self._acquisition_process = None
         self._parser_process = None
+        self._csv_process = None
         self.lines = 0
         self.queue = multiprocessing.Queue()
 
@@ -65,7 +67,11 @@ class MainWindow(QtGui.QMainWindow):
         Log.i(TAG, "Clicked start")
         self._reset_buffers()
         port = self.ui.cBox_Port.currentText()
-        self._parser_process = ParserProcess(self.queue)
+        if self.ui.chBox_export.isChecked():
+            self._csv_process = CSVProcess(path="data")
+            self._parser_process = ParserProcess(self.queue, store_reference=self._csv_process)
+        else:
+            self._parser_process = ParserProcess(self.queue)
 
         if self._get_source() == SourceType.serial:
             self._acquisition_process = SerialProcess(self._parser_process)
@@ -73,6 +79,8 @@ class MainWindow(QtGui.QMainWindow):
             self._acquisition_process = SimulatorProcess(self._parser_process)
         if self._acquisition_process.open(port=port, speed=float(self.ui.cBox_Speed.currentText())):
             self._parser_process.start()
+            if self.ui.chBox_export.isChecked():
+                self._csv_process.start()
             self._acquisition_process.start()
             self._timer_plot.start(PLOT_UPDATE_TIME_MS)
             self._enable_ui(False)
@@ -97,7 +105,11 @@ class MainWindow(QtGui.QMainWindow):
 
         if self._parser_process is not None and self._parser_process.is_alive():
             self._parser_process.stop()
-            self._acquisition_process.join(JOIN_TIMEOUT_MS)
+            self._parser_process.join(JOIN_TIMEOUT_MS)
+
+        if self._csv_process is not None and self._csv_process.is_alive():
+            self._csv_process.stop()
+            self._csv_process.join(JOIN_TIMEOUT_MS)
 
     def closeEvent(self, evnt):
         """
@@ -120,7 +132,7 @@ class MainWindow(QtGui.QMainWindow):
         self.ui.cBox_Port.setEnabled(enabled)
         self.ui.cBox_Speed.setEnabled(enabled)
         self.ui.pButton_Start.setEnabled(enabled)
-        # self.ui.chBox_export.setEnabled(enabled)
+        self.ui.chBox_export.setEnabled(enabled)
         self.ui.pButton_Stop.setEnabled(not enabled)
 
     def _configure_plot(self):

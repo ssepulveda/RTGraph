@@ -60,7 +60,7 @@ class Ui_MainWindow(object):
         self.sBox_Samples.setObjectName(_fromUtf8("sBox_Samples"))
         self.Layout_controls.addWidget(self.sBox_Samples, 0, 2, 1, 1)
         self.chBox_export = QtGui.QCheckBox(self.centralwidget)
-        self.chBox_export.setEnabled(False)
+        self.chBox_export.setEnabled(True)
         self.chBox_export.setObjectName(_fromUtf8("chBox_export"))
         self.Layout_controls.addWidget(self.chBox_export, 1, 2, 1, 1)
         self.gridLayout.addLayout(self.Layout_controls, 7, 0, 1, 2)
