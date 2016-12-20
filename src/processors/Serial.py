@@ -13,15 +13,15 @@ TAG = "Serial"
 
 
 class SerialProcess(multiprocessing.Process):
-    def __init__(self, result_queue):
+    def __init__(self, parser_process):
         """
         Initialises values for process.
-        :param result_queue: A queue where the obtained data will be appended.
-        :type result_queue: multiprocessing queue
+        :param parser_process: Reference to a ParserProcess instance.
+        :type parser_process: ParserProcess.
         """
         multiprocessing.Process.__init__(self)
-        self._result_queue = result_queue
         self._exit = multiprocessing.Event()
+        self._parser = parser_process
         self._serial = serial.Serial()
         Log.i(TAG, "Process ready")
 
@@ -58,15 +58,7 @@ class SerialProcess(multiprocessing.Process):
                 Log.i(TAG, "Port opened")
                 timestamp = time()
                 while not self._exit.is_set():
-                    data = self._serial.readline()
-                    Log.d(TAG, data)
-                    if len(data) > 0:
-                        try:
-                            values = data.decode("UTF-8").split(",")
-                            values = [float(v) for v in values]
-                            self._result_queue.put(((time() - timestamp), values))
-                        except:
-                            Log.w(TAG, "Wrong format? {}".format(data))
+                    self._parser.add([time() - timestamp, self._serial.readline()])
                 Log.i(TAG, "Process finished")
                 self._serial.close()
             else:

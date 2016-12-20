@@ -5,6 +5,7 @@ from common.logger import Logger as Log
 from common.ringBuffer import RingBuffer
 from processors.Serial import SerialProcess
 from processors.Simulator import SimulatorProcess
+from processors.Parser import ParserProcess
 from ui.mainWindow_ui import *
 from ui.popUp import PopUp
 
@@ -36,7 +37,8 @@ class MainWindow(QtGui.QMainWindow):
         self._timer_plot = None
         self._data_buffers = None
         self._time_buffer = None
-        self._adquisition_process = None
+        self._acquisition_process = None
+        self._parser_process = None
         self.lines = 0
         self.queue = multiprocessing.Queue()
 
@@ -63,13 +65,15 @@ class MainWindow(QtGui.QMainWindow):
         Log.i(TAG, "Clicked start")
         self._reset_buffers()
         port = self.ui.cBox_Port.currentText()
+        self._parser_process = ParserProcess(self.queue)
 
         if self._get_source() == SourceType.serial:
-            self._adquisition_process = SerialProcess(self.queue)
+            self._acquisition_process = SerialProcess(self._parser_process)
         elif self._get_source() == SourceType.simulator:
-            self._adquisition_process = SimulatorProcess(self.queue)
-        if self._adquisition_process.open(port=port, speed=float(self.ui.cBox_Speed.currentText())):
-            self._adquisition_process.start()
+            self._acquisition_process = SimulatorProcess(self._parser_process)
+        if self._acquisition_process.open(port=port, speed=float(self.ui.cBox_Speed.currentText())):
+            self._parser_process.start()
+            self._acquisition_process.start()
             self._timer_plot.start(PLOT_UPDATE_TIME_MS)
             self._enable_ui(False)
         else:
@@ -86,10 +90,14 @@ class MainWindow(QtGui.QMainWindow):
         Log.i(TAG, "Clicked stop")
         self._timer_plot.stop()
         self._enable_ui(True)
-        if self._adquisition_process is not None and self._adquisition_process.is_alive():
-            self._adquisition_process.stop()
-            self._adquisition_process.join(JOIN_TIMEOUT_MS)
+        if self._acquisition_process is not None and self._acquisition_process.is_alive():
+            self._acquisition_process.stop()
+            self._acquisition_process.join(JOIN_TIMEOUT_MS)
             self._reset_buffers()
+
+        if self._parser_process is not None and self._parser_process.is_alive():
+            self._parser_process.stop()
+            self._acquisition_process.join(JOIN_TIMEOUT_MS)
 
     def closeEvent(self, evnt):
         """
@@ -98,7 +106,7 @@ class MainWindow(QtGui.QMainWindow):
         :param evnt: QT evnt.
         :return:
         """
-        if self._adquisition_process is not None and self._adquisition_process.is_alive():
+        if self._acquisition_process is not None and self._acquisition_process.is_alive():
             Log.i(TAG, "Window closed without stopping capture, stopping it")
             self.stop()
 

@@ -1,25 +1,24 @@
 import multiprocessing
-from time import time
-from time import sleep
-from common.logger import Logger as Log
-
+from time import time, sleep
 import numpy as np
+
+from common.logger import Logger as Log
 
 
 TAG = "Simulator"
 
 
 class SimulatorProcess(multiprocessing.Process):
-    def __init__(self, result_queue):
+    def __init__(self, parser_process):
         """
         Initialises values for process.
-        :param result_queue: A queue where the obtained data will be appended.
-        :type result_queue: multiprocessing queue
+        :param parser_process: Reference to a ParserProcess instance.
+        :type parser_process: ParserProcess.
         """
         multiprocessing.Process.__init__(self)
-        self._result_queue = result_queue
         self._exit = multiprocessing.Event()
         self._period = None
+        self._parser = parser_process
         Log.i(TAG, "Process Ready")
 
     def open(self, port=None, speed=0.002, timeout=0.5):
@@ -39,10 +38,7 @@ class SimulatorProcess(multiprocessing.Process):
 
     def run(self):
         """
-        Reads the serial port expecting CSV until a stop call is made.
-        The expected format is comma (",") separated values, and a new line (CRLF or LF) as a new row.
-        While running, it will parse CSV data convert each value to float and added to a queue.
-        If incoming data from serial port can't be converted to float, that data will be discarded.
+        Simulates data comming as CSV
         :return:
         """
         Log.i(TAG, "Process starting...")
@@ -50,9 +46,7 @@ class SimulatorProcess(multiprocessing.Process):
         sin_coef = 2 * np.pi
         while not self._exit.is_set():
             stamp = time() - timestamp
-            data = [np.sin(sin_coef * stamp)]
-            Log.d(TAG, data)
-            self._result_queue.put((stamp, data))
+            self._parser.add([stamp, str(("{}\r\n".format(np.sin(sin_coef * stamp)))).encode("UTF-8")])
             sleep(self._period)
         Log.i(TAG, "Process finished")
 
@@ -67,15 +61,15 @@ class SimulatorProcess(multiprocessing.Process):
     @staticmethod
     def get_ports():
         """
-        Gets a list of the available serial ports.
-        :return: List of available serial ports.
+        Gets a list of the available ports.
+        :return: List of available ports.
         """
         return ["Sine Simulator"]
 
     @staticmethod
     def get_speeds():
         """
-        Gets a list of the common serial baud rates, in bps.
-        :return: List of the common baud rates, in bps.
+        Gets a list of the speeds.
+        :return: List of the speeds.
         """
         return [str(v) for v in [0.002, 0.004, 0.005, 0.010, 0.020, 0.050, 0.100, 0.250]]
