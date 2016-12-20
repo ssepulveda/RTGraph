@@ -34,7 +34,7 @@ class SerialProcess(multiprocessing.Process):
         :return: True if the port is available.
         """
         self._serial.port = port
-        self._serial.baudrate = speed
+        self._serial.baudrate = int(speed)
         self._serial.stopbits = serial.STOPBITS_ONE
         self._serial.bytesize = serial.EIGHTBITS
         self._serial.timeout = timeout

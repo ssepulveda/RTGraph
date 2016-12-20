@@ -18,9 +18,7 @@ def _init_logger():
 
 def _start_app(app, args):
     log.info("Starting RTGraph")
-    win = mainWindow.MainWindow(port=args.get_user_port(),
-                                bd=args.get_user_bd(),
-                                samples=args.get_user_samples())
+    win = mainWindow.MainWindow(samples=args.get_user_samples())
     win.show()
     app.exec()
 

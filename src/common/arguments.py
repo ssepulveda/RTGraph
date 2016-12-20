@@ -24,18 +24,6 @@ class Arguments:
                             help="Enable debug messages"
                             )
 
-        parser.add_argument("-p", "--port",
-                            dest="user_port",
-                            default=None,
-                            help="Specify serial port to use"
-                            )
-
-        parser.add_argument("-b", "--baudrate",
-                            dest="user_bd",
-                            default=115200,
-                            help="Specify serial port baudrate to use"
-                            )
-
         parser.add_argument("-s", "--samples",
                             dest="user_samples",
                             default=500,
@@ -53,23 +41,6 @@ class Arguments:
         else:
             log.warning("Parser was not created !")
             return None
-
-    def get_user_port(self):
-        """
-        Gets the user specified port name.
-        :return: Port name, if specified by user.
-        """
-        if self._parser.user_port is None:
-            return None
-        else:
-            return str(self._parser.user_port)
-
-    def get_user_bd(self):
-        """
-        Gets the user specified baud rate.
-        :return: Baud rate specified by user, or default value if not specified.
-        """
-        return int(self._parser.user_bd)
 
     def get_user_samples(self):
         """

@@ -1,8 +1,10 @@
 import multiprocessing
 import logging as log
+from enum import Enum
 
 from common.ringBuffer import RingBuffer
 from processors.Serial import SerialProcess
+from processors.Simulator import SimulatorProcess
 from ui.mainWindow_ui import *
 from ui.popUp import PopUp
 
@@ -10,6 +12,7 @@ JOIN_TIMEOUT_MS = 1000
 PLOT_UPDATE_TIME_MS = 16  # 60 fps
 """ http://www.gnuplotting.org/tag/palette/ """
 COLORS = ['#0072bd', '#d95319', '#edb120', '#7e2f8e', '#77ac30', '#4dbeee', '#a2142f']
+SOURCES = ["Simulator", "Serial"]
 
 
 class MainWindow(QtGui.QMainWindow):
@@ -37,28 +40,13 @@ class MainWindow(QtGui.QMainWindow):
         self.queue = multiprocessing.Queue()
 
         # configures
+        self.ui.cBox_Source.addItems(SOURCES)
         self._configure_plot()
         self._configure_timers()
         self._configure_signals()
 
         # populate combo box for serial ports
-        speeds = SerialProcess.get_serial_ports_baudrates()
-        self.ui.cBox_Speed.addItems(speeds)
-        try:
-            self.ui.cBox_Speed.setCurrentIndex(speeds.index(str(bd)))
-        except:
-            log.warning("Adding rare speed value to the list")
-            self.ui.cBox_Speed.addItem(str(bd))
-            self.ui.cBox_Speed.setCurrentIndex(len(speeds))
-
-        if port is None:
-            ports = SerialProcess.get_serial_ports()
-            if len(ports) > 0:
-                self.ui.cBox_Port.addItems(ports)
-
-        else:
-            log.info("Setting user specified port {}".format(port))
-            self.ui.cBox_Port.addItem(port)
+        self.ui.cBox_Source.setCurrentIndex(SourceType.serial.value)
 
         self.ui.sBox_Samples.setValue(samples)
 
@@ -74,8 +62,12 @@ class MainWindow(QtGui.QMainWindow):
         log.info("Clicked start")
         self._reset_buffers()
         port = self.ui.cBox_Port.currentText()
-        self._adquisition_process = SerialProcess(self.queue)
-        if self._adquisition_process.open_port(port=port, bd=int(self.ui.cBox_Speed.currentText())):
+
+        if self._get_source() == SourceType.serial:
+            self._adquisition_process = SerialProcess(self.queue)
+        elif self._get_source() == SourceType.simulator:
+            self._adquisition_process = SimulatorProcess(self.queue)
+        if self._adquisition_process.open(port=port, speed=float(self.ui.cBox_Speed.currentText())):
             self._adquisition_process.start()
             self._timer_plot.start(PLOT_UPDATE_TIME_MS)
             self._enable_ui(False)
@@ -148,6 +140,7 @@ class MainWindow(QtGui.QMainWindow):
         self.ui.pButton_Start.clicked.connect(self.start)
         self.ui.pButton_Stop.clicked.connect(self.stop)
         self.ui.sBox_Samples.valueChanged.connect(self._update_sample_size)
+        self.ui.cBox_Source.currentIndexChanged.connect(self._source_changed)
 
     def _reset_buffers(self):
         """
@@ -201,3 +194,42 @@ class MainWindow(QtGui.QMainWindow):
         self._plt.clear()
         for idx in range(self.lines):
             self._plt.plot(x=self._time_buffer.get_all(), y=self._data_buffers[idx].get_all(), pen=COLORS[idx])
+
+    def _source_changed(self):
+        """
+        Updates the source and depending boxes on change.
+        This function is connected to the indexValueChanged signal of the Source ComboBox.
+        :return:
+        """
+        # clear boxes before adding new
+        self.ui.cBox_Port.clear()
+        self.ui.cBox_Speed.clear()
+
+        if self._get_source() == SourceType.serial:
+            log.info("Scanning Serial source")
+            speeds = SerialProcess.get_speeds()
+            self.ui.cBox_Speed.addItems(speeds)
+            self.ui.cBox_Speed.setCurrentIndex(len(speeds) - 1)
+            ports = SerialProcess.get_ports()
+            if len(ports) > 0:
+                self.ui.cBox_Port.addItems(ports)
+        elif self._get_source() == SourceType.simulator:
+            log.info("Scanning Simulator source")
+            self.ui.cBox_Speed.addItems(SimulatorProcess.get_speeds())
+            self.ui.cBox_Port.addItems(SimulatorProcess.get_ports())
+        else:
+            log.warning("Unknown source selected")
+
+    def _get_source(self):
+        """
+        Gets the current source type.
+        :return: Current Source type.
+        :type: SourceType.
+        """
+        return SourceType(self.ui.cBox_Source.currentIndex())
+
+
+class SourceType(Enum):
+    simulator = 0
+    serial = 1
+
