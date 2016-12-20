@@ -1,12 +1,17 @@
+import sys
 import multiprocessing
 from PyQt4 import QtGui
 
 from ui import mainWindow
 from common.arguments import *
 from common.architecture import Architecture
+from common.logger import Logger as Log
 
 MINIMAL_PYTHON_VERSION_MAJOR = 3
 MINIMAL_PYTHON_VERSION_MINOR = 2
+
+
+TAG = "RTGraph"
 
 
 def _init_logger():
@@ -17,23 +22,23 @@ def _init_logger():
 
 
 def _start_app(app, args):
-    log.info("Starting RTGraph")
+    Log.i(TAG, "Starting RTGraph")
     win = mainWindow.MainWindow(samples=args.get_user_samples())
     win.show()
     app.exec()
 
-    log.info("Finishing RTGraph\n")
+    Log.i(TAG, "Finishing RTGraph\n")
     win.close()
 
 
 def _fail_app():
     txt = str("RTGraph requires Python {}.{} to run"
               .format(MINIMAL_PYTHON_VERSION_MAJOR, MINIMAL_PYTHON_VERSION_MINOR))
-    log.error(txt)
+    Log.e(TAG, txt)
 
 
 def _close_app():
-    log.shutdown()
+    Log.close()
     sys.exit()
 
 

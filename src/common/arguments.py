@@ -1,5 +1,9 @@
 import argparse
-from common.logger import *
+from common.logger import Logger as Log
+from common.logger import LoggerLevel
+
+
+TAG = "Arguments"
 
 
 class Arguments:
@@ -39,7 +43,7 @@ class Arguments:
         if self._parser is not None:
             self._parse_log_level()
         else:
-            log.warning("Parser was not created !")
+            Log.w(TAG, "Parser was not created !")
             return None
 
     def get_user_samples(self):
@@ -55,8 +59,8 @@ class Arguments:
         :return:
         """
         if self._parser.log_level_info:
-            Logger(log.INFO)
+            Log(LoggerLevel.INFO)
         elif self._parser.log_level_debug:
-            Logger(log.DEBUG)
+            Log(LoggerLevel.DEBUG)
         else:
-            Logger(log.WARNING)
+            Log(LoggerLevel.WARNING)
