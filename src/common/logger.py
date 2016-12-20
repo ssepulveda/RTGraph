@@ -55,7 +55,7 @@ class Logger:
         Logs in info level architecture related information.
         :return:
         """
-        tag = "USER"
+        tag = "User"
         Logger.i(tag, "Platform: {}".format(Architecture.get_os_name()))
         Logger.i(tag, "Path: {}".format(Architecture.get_path()))
         Logger.i(tag, "Python: {}".format(Architecture.get_python_version()))
