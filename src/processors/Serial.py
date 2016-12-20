@@ -22,19 +22,19 @@ class SerialProcess(multiprocessing.Process):
         self._serial = serial.Serial()
         log.info("SerialProcess ready")
 
-    def open_port(self, port, bd=115200, timeout=0.5):
+    def open(self, port, speed=115200, timeout=0.5):
         """
         Opens a specified serial port.
         :param port: Serial port name.
         :type port: basestring
-        :param bd: Baud rate, in bps, to connect to port.
-        :type bd: int
+        :param speed: Baud rate, in bps, to connect to port.
+        :type speed: int
         :param timeout: Sets the general connection timeout.
         :type timeout: float
         :return: True if the port is available.
         """
         self._serial.port = port
-        self._serial.baudrate = bd
+        self._serial.baudrate = speed
         self._serial.stopbits = serial.STOPBITS_ONE
         self._serial.bytesize = serial.EIGHTBITS
         self._serial.timeout = timeout
@@ -61,7 +61,7 @@ class SerialProcess(multiprocessing.Process):
                             values = [float(v) for v in values]
                             self._result_queue.put(((time() - timestamp), values))
                         except:
-                            log.warn("Wrong format? {}".format(data))
+                            log.warning("Wrong format? {}".format(data))
                     log.debug(data)
                 log.info("SerialProcess finished")
                 self._serial.close()
@@ -79,7 +79,7 @@ class SerialProcess(multiprocessing.Process):
         self._exit.set()
 
     @staticmethod
-    def get_serial_ports():
+    def get_ports():
         """
         Gets a list of the available serial ports.
         :return: List of available serial ports.
@@ -95,7 +95,7 @@ class SerialProcess(multiprocessing.Process):
             return found_ports
 
     @staticmethod
-    def get_serial_ports_baudrates():
+    def get_speeds():
         """
         Gets a list of the common serial baud rates, in bps.
         :return: List of the common baud rates, in bps.
@@ -108,7 +108,7 @@ class SerialProcess(multiprocessing.Process):
         :param port: Port name to be verified.
         :return: True if the port is connected to the host.
         """
-        for p in self.get_serial_ports():
+        for p in self.get_ports():
             if p == port:
                 return True
         return False
