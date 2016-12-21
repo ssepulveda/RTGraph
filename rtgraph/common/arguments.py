@@ -1,7 +1,7 @@
 import argparse
-from common.logger import Logger as Log
-from common.logger import LoggerLevel
 
+from rtgraph.common.logger import Logger as Log
+from rtgraph.common.logger import LoggerLevel
 
 TAG = "Arguments"
 

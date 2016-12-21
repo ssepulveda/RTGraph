@@ -1,14 +1,15 @@
 import multiprocessing
 from enum import Enum
 
-from common.logger import Logger as Log
-from common.ringBuffer import RingBuffer
-from processors.Serial import SerialProcess
-from processors.Simulator import SimulatorProcess
-from processors.Parser import ParserProcess
-from processors.Csv import CSVProcess
-from ui.mainWindow_ui import *
-from ui.popUp import PopUp
+from rtgraph.common.logger import Logger as Log
+from rtgraph.common.ringBuffer import RingBuffer
+from rtgraph.processors.Csv import CSVProcess
+from rtgraph.processors.Serial import SerialProcess
+from rtgraph.processors.Simulator import SimulatorProcess
+from rtgraph.ui.mainWindow_ui import *
+from rtgraph.ui.popUp import PopUp
+
+from rtgraph.processors.Parser import ParserProcess
 
 JOIN_TIMEOUT_MS = 1000
 PLOT_UPDATE_TIME_MS = 16  # 60 fps

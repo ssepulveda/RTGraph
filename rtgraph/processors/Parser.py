@@ -1,8 +1,7 @@
 import multiprocessing
 from time import sleep
 
-from common.logger import Logger as Log
-
+from rtgraph.common.logger import Logger as Log
 
 TAG = "Parser"
 

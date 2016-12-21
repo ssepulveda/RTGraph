@@ -5,7 +5,7 @@ UI_FILES = $(wildcard *.ui)
 RES_FILES = $(wildcard *.qrc)
 
 ### CONFIGURABLE
-OUT_FOLDER = ../src/ui/
+OUT_FOLDER = ../ui/
 
 # Binaries
 # PYUIC = pyuic5

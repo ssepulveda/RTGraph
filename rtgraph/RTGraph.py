@@ -1,11 +1,12 @@
-import sys
 import multiprocessing
-from PyQt4 import QtGui
+import sys
 
-from ui import mainWindow
-from common.arguments import *
-from common.architecture import Architecture
-from common.logger import Logger as Log
+from PyQt4 import QtGui
+from rtgraph.common.architecture import Architecture
+from rtgraph.common.arguments import *
+from rtgraph.common.logger import Logger as Log
+
+from rtgraph.ui import mainWindow
 
 MINIMAL_PYTHON_VERSION_MAJOR = 3
 MINIMAL_PYTHON_VERSION_MINOR = 2

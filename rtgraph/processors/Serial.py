@@ -1,13 +1,12 @@
 import multiprocessing
 from time import time
 
-from common.logger import Logger as Log
-from common.architecture import Architecture
-from common.architecture import OSType
-
 import serial
 from serial.tools import list_ports
 
+from rtgraph.common.architecture import Architecture
+from rtgraph.common.architecture import OSType
+from rtgraph.common.logger import Logger as Log
 
 TAG = "Serial"
 

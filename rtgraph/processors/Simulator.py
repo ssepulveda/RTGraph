@@ -1,9 +1,9 @@
 import multiprocessing
 from time import time, sleep
+
 import numpy as np
 
-from common.logger import Logger as Log
-
+from rtgraph.common.logger import Logger as Log
 
 TAG = "Simulator"
 

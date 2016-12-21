@@ -3,7 +3,7 @@ import logging.handlers
 import sys
 from enum import Enum
 
-from common.architecture import Architecture
+from rtgraph.common.architecture import Architecture
 
 
 class Logger:

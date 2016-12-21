@@ -1,10 +1,9 @@
-import multiprocessing
-from time import strftime, gmtime, sleep
 import csv
+import multiprocessing
 import os.path
+from time import strftime, gmtime, sleep
 
-from common.logger import Logger as Log
-
+from rtgraph.common.logger import Logger as Log
 
 TAG = "CSV"
 

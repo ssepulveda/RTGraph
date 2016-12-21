@@ -1,15 +1,14 @@
 all: gui
 
 gui:
-	$(MAKE) -C res
+	$(MAKE) -C rtgraph/res
 
 run:
-	python3 src/RTGraph.py
+	python3 rtgraph/RTGraph.py -i
 
 clean:
-	$(MAKE) clean -C res
-	rm -rf *.pyc
-	rm -rf *.log*
-	rm -rf __pycache__
-	rm -rf src/*.log*
-	rm -rf src/data
+	$(MAKE) clean -C rtgraph/res
+	rm -rf rtgraph/*.pyc
+	rm -rf rtgraph/*.log*
+	rm -rf rtgraph/__pycache__
+	rm -rf rtgraph/data
