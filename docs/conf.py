@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 #
 # RTGraph documentation build configuration file, created by
-# sphinx-quickstart on Tue Dec 20 22:06:30 2016.
+# sphinx-quickstart on Tue Dec 20 22:19:34 2016.
 #
 # This file is execfile()d with the current directory set to its
 # containing dir.
