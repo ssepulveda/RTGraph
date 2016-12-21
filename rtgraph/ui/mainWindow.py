@@ -97,6 +97,7 @@ class MainWindow(QtGui.QMainWindow):
         self.ui.cBox_Speed.setEnabled(enabled)
         self.ui.pButton_Start.setEnabled(enabled)
         self.ui.chBox_export.setEnabled(enabled)
+        self.ui.cBox_Source.setEnabled(enabled)
         self.ui.pButton_Stop.setEnabled(not enabled)
 
     def _configure_plot(self):

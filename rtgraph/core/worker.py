@@ -28,7 +28,7 @@ class Worker:
         self.lines = 0
         self.queue = Queue()
         self._port = port
-        self._spped = float(speed)
+        self._speed = float(speed)
         self._samples = samples
         self._source = source
         self._export = export_enabled
@@ -46,7 +46,7 @@ class Worker:
             self._acquisition_process = SerialProcess(self._parser_process)
         elif self._source == SourceType.simulator:
             self._acquisition_process = SimulatorProcess(self._parser_process)
-        if self._acquisition_process.open(port=self._port, speed=self._spped):
+        if self._acquisition_process.open(port=self._port, speed=self._speed):
             self._parser_process.start()
             if self._export:
                 self._csv_process.start()

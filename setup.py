@@ -38,7 +38,7 @@ setup(
     classifiers=[
         'Programming Language :: Python',
         "Programming Language :: Python :: 3",
-        'Development Status :: 1 - Beta',
+        'Development Status :: 2 - Beta',
         'Environment :: Other Environment',
         "Intended Audience :: Science/Research",
         "License :: MIT License",

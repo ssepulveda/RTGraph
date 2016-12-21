@@ -1,2 +1,4 @@
-__version__ = '0.2.0'
+from rtgraph.core.constants import Constants
+
+__version__ = Constants.app_version
 
