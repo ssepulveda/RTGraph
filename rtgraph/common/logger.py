@@ -4,6 +4,7 @@ import sys
 from enum import Enum
 
 from rtgraph.common.architecture import Architecture
+from rtgraph.common.fileManager import FileManager
 from rtgraph.core.constants import Constants
 
 
@@ -20,6 +21,7 @@ class Logger:
         self.logger = logging.getLogger()
         self.logger.setLevel(level.value)
 
+        FileManager.create_dir(Constants.app_export_path)
         file_handler = logging.handlers.RotatingFileHandler("{}/{}"
                                                             .format(Constants.app_export_path, Constants.log_filename),
                                                             maxBytes=Constants.log_max_bytes,
