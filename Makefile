@@ -7,7 +7,7 @@ run:
 	python3 rtgraph/RTGraph.py -i
 
 docs:
-	$(MAKE) html -C docs
+	$(MAKE) -C docs html
 
 .PHONY: clean
 clean:
