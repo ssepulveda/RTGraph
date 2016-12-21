@@ -1,9 +1,9 @@
 import csv
 import multiprocessing
-import os.path
 from time import strftime, gmtime, sleep
 
 from rtgraph.core.constants import Constants
+from rtgraph.common.fileManager import FileManager
 from rtgraph.common.logger import Logger as Log
 
 
@@ -51,13 +51,9 @@ class CSVProcess(multiprocessing.Process):
 
     @staticmethod
     def _create_file(filename, path=None, extension=Constants.csv_extension):
-        if path is not None:
-            if not os.path.isdir(path):
-                os.makedirs(path)
-
-        if path is None:
-            full_path = str("{}.{}".format(filename, extension))
-        else:
-            full_path = str("{}/{}.{}".format(path, filename, extension))
-        Log.i(TAG, "Storing in {}".format(full_path))
-        return open(full_path, "a", newline='')
+        FileManager.create_dir(path)
+        full_path = FileManager.create_file(filename, extension=extension, path=path)
+        if not FileManager.file_exists(full_path):
+            Log.i(TAG, "Storing in {}".format(full_path))
+            return open(full_path, "a", newline='')
+        return None
