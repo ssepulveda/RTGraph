@@ -1,4 +1,3 @@
-from __future__ import print_function
 from setuptools import setup, find_packages
 
 import io
@@ -29,6 +28,7 @@ setup(
     author='Sebastian Sepulveda',
     author_email='ssepulveda.sm@gmail.com',
     install_requires=['numpy',
+                      'pyserial',
                       'pyqtgraph'],
     description=DESCRIPTION,
     long_description=LONG_DESCRIPTION,
