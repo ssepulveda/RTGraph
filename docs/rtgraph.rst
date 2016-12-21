@@ -7,6 +7,7 @@ Subpackages
 .. toctree::
 
     rtgraph.common
+    rtgraph.core
     rtgraph.processors
     rtgraph.ui
 

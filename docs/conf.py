@@ -20,7 +20,7 @@
 import os
 import sys
 sys.path.insert(0, os.path.abspath('..'))
-import rtgraph
+from rtgraph.core.constants import Constants
 
 
 # -- General configuration ------------------------------------------------
@@ -57,7 +57,7 @@ author = 'Sebastian Sepulveda'
 # built documents.
 #
 # The short X.Y version.
-[major, minor, release] = rtgraph.__version__.split(".")
+[major, minor, release] = Constants.app_version.split(".")
 version =  "{}.{}".format(major, minor)
 # The full version, including alpha/beta/rc tags.
 release = "{}".format(release)

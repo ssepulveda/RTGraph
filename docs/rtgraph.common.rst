@@ -28,14 +28,6 @@ rtgraph.common.logger module
     :undoc-members:
     :show-inheritance:
 
-rtgraph.common.ringBuffer module
---------------------------------
-
-.. automodule:: rtgraph.common.ringBuffer
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
 
 Module contents
 ---------------

@@ -12,6 +12,14 @@ rtgraph.ui.mainWindow module
     :undoc-members:
     :show-inheritance:
 
+rtgraph.ui.mainWindow_ui module
+-------------------------------
+
+.. automodule:: rtgraph.ui.mainWindow_ui
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
 rtgraph.ui.popUp module
 -----------------------
 
