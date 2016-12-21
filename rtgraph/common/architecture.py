@@ -6,7 +6,7 @@ from enum import Enum
 
 class Architecture:
     """
-    Wrappers for commons architecture specific methods
+    Wrappers for architecture specific methods.
     """
 
     @staticmethod
@@ -28,9 +28,9 @@ class Architecture:
     @staticmethod
     def get_os_name():
         """
-        Gets the current OS name string of the host.
-        Host OS name as reported by platform.
+        Gets the current OS name string of the host (as reported by platform).
         :return: OS name.
+        :rtype: basestring.
         """
         return platform.platform()
 
@@ -39,6 +39,7 @@ class Architecture:
         """
         Gets the PWD or CWD of the currently running application.
         :return: Path of the PWD or CWD.
+        :rtype: basestring.
         """
         return sys.path[0]
 
@@ -46,7 +47,8 @@ class Architecture:
     def get_python_version():
         """
         Gets the running Python version (Major, minor, release).
-        :return: Python version formated as major.minor.release.
+        :return: Python version formatted as major.minor.release.
+        :rtype: basestring.
         """
         version = sys.version_info
         return str("{}.{}.{}".format(version[0], version[1], version[2]))
@@ -54,10 +56,13 @@ class Architecture:
     @staticmethod
     def is_python_version(major, minor=0):
         """
-        Checks if the running Python version is equals or greater to the specified version.
+        Checks if the running Python version is equal or greater than the specified version.
         :param major: Major value of the version.
+        :type major: int.
         :param minor: Minor value of the version.
+        :type minor: int.
         :return: True if the version specified is equal or greater than the current version.
+        :rtype: bool.
         """
         version = sys.version_info
         if version[0] >= major and version[1] >= minor:

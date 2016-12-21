@@ -9,6 +9,9 @@ TAG = "Arguments"
 
 
 class Arguments:
+    """
+    Wrapper for argparse package.
+    """
     def __init__(self):
         self._parser = None
 
@@ -59,21 +62,28 @@ class Arguments:
         """
         Gets the user specified samples to show in the plot.
         :return: Samples specified by user, or default value if not specified.
+        :rtype: int.
         """
         return int(self._parser.user_samples)
 
-    def get_console_log(self):
+    def get_user_console_log(self):
+        """
+        Gets the user specified log to console flag.
+        :return: True if log to console is enabled.
+        :rtype: bool.
+        """
         return self._parser.log_to_console
 
     def _parse_log_level(self):
         """
         Sets the log level depending on user specification.
+        It will also enable or disable log to console based on user specification.
         :return:
         """
-        log_to_console = self.get_console_log()
+        log_to_console = self.get_user_console_log()
+        level = LoggerLevel.INFO
         if self._parser.log_level_info:
-            Log(LoggerLevel.INFO, enable_console=log_to_console)
+            level = LoggerLevel.INFO
         elif self._parser.log_level_debug:
-            Log(LoggerLevel.DEBUG, enable_console=log_to_console)
-        else:
-            Log(LoggerLevel.INFO, enable_console=log_to_console)
+            level = LoggerLevel.DEBUG
+        Log(level, enable_console=log_to_console)
