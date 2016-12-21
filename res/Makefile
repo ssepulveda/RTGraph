@@ -4,7 +4,7 @@ UI_FILES = $(wildcard *.ui)
 # Resources files from qt
 RES_FILES = $(wildcard *.qrc)
 
-### CONFIGURABLES
+### CONFIGURABLE
 OUT_FOLDER = ../src/ui/
 
 # Binaries
@@ -27,4 +27,5 @@ ui : $(PY_UI_FILES)
 	$(PYUIC) $< -o $(OUT_FOLDER)$@
 
 clean :
-	$(RM) $(OUT_FOLDER)$(PY_UI_FILES) $(OUT_FOLDER)$(PY_RES_FILES)
+	$(RM) $(OUT_FOLDER)$(PY_UI_FILES)
+#	$(RM) $(OUT_FOLDER)$(PY_RES_FILES)
