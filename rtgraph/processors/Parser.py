@@ -1,13 +1,17 @@
 import multiprocessing
 from time import sleep
 
+from rtgraph.core.constants import Constants
 from rtgraph.common.logger import Logger as Log
+
 
 TAG = "Parser"
 
 
 class ParserProcess(multiprocessing.Process):
-    def __init__(self, data_queue, store_reference=None, split=",", timeout=0.05):
+    def __init__(self, data_queue, store_reference=None,
+                 split=Constants.csv_delimiter,
+                 timeout=Constants.parser_timeout_ms):
         multiprocessing.Process.__init__(self)
         self._exit = multiprocessing.Event()
         self._in_queue = multiprocessing.Queue()

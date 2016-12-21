@@ -2,6 +2,8 @@ import argparse
 
 from rtgraph.common.logger import Logger as Log
 from rtgraph.common.logger import LoggerLevel
+from rtgraph.core.constants import Constants
+
 
 TAG = "Arguments"
 
@@ -30,7 +32,7 @@ class Arguments:
 
         parser.add_argument("-s", "--samples",
                             dest="user_samples",
-                            default=500,
+                            default=Constants.argument_default_samples,
                             help="Specify number of sample to show on plot"
                             )
         self._parser = parser.parse_args()

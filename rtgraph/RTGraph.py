@@ -5,11 +5,9 @@ from PyQt4 import QtGui
 from rtgraph.common.architecture import Architecture
 from rtgraph.common.arguments import *
 from rtgraph.common.logger import Logger as Log
+from rtgraph.core.constants import MinimalPython
 
 from rtgraph.ui import mainWindow
-
-MINIMAL_PYTHON_VERSION_MAJOR = 3
-MINIMAL_PYTHON_VERSION_MINOR = 2
 
 
 TAG = "RTGraph"
@@ -34,7 +32,7 @@ def _start_app(app, args):
 
 def _fail_app():
     txt = str("RTGraph requires Python {}.{} to run"
-              .format(MINIMAL_PYTHON_VERSION_MAJOR, MINIMAL_PYTHON_VERSION_MINOR))
+              .format(MinimalPython.major, MinimalPython.minor))
     Log.e(TAG, txt)
 
 
@@ -48,7 +46,7 @@ if __name__ == '__main__':
     args = _init_logger()
 
     app = QtGui.QApplication(sys.argv)
-    if Architecture.is_python_version(MINIMAL_PYTHON_VERSION_MAJOR, minor=MINIMAL_PYTHON_VERSION_MINOR):
+    if Architecture.is_python_version(MinimalPython.major, minor=MinimalPython.minor):
         _start_app(app, args)
     else:
         _fail_app()

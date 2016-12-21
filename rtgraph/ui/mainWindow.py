@@ -1,21 +1,18 @@
 import multiprocessing
 from enum import Enum
 
+from rtgraph.ui.mainWindow_ui import *
+
 from rtgraph.common.logger import Logger as Log
-from rtgraph.common.ringBuffer import RingBuffer
+from rtgraph.core.ringBuffer import RingBuffer
+from rtgraph.core.constants import Constants, SourceType
 from rtgraph.processors.Csv import CSVProcess
+from rtgraph.processors.Parser import ParserProcess
 from rtgraph.processors.Serial import SerialProcess
 from rtgraph.processors.Simulator import SimulatorProcess
-from rtgraph.ui.mainWindow_ui import *
 from rtgraph.ui.popUp import PopUp
 
-from rtgraph.processors.Parser import ParserProcess
 
-JOIN_TIMEOUT_MS = 1000
-PLOT_UPDATE_TIME_MS = 16  # 60 fps
-""" http://www.gnuplotting.org/tag/palette/ """
-COLORS = ['#0072bd', '#d95319', '#edb120', '#7e2f8e', '#77ac30', '#4dbeee', '#a2142f']
-SOURCES = ["Simulator", "Serial"]
 TAG = "MainWindow"
 
 
@@ -46,7 +43,7 @@ class MainWindow(QtGui.QMainWindow):
         self.queue = multiprocessing.Queue()
 
         # configures
-        self.ui.cBox_Source.addItems(SOURCES)
+        self.ui.cBox_Source.addItems(Constants.app_sources)
         self._configure_plot()
         self._configure_timers()
         self._configure_signals()
@@ -69,7 +66,7 @@ class MainWindow(QtGui.QMainWindow):
         self._reset_buffers()
         port = self.ui.cBox_Port.currentText()
         if self.ui.chBox_export.isChecked():
-            self._csv_process = CSVProcess(path="data")
+            self._csv_process = CSVProcess(path=Constants.app_export_path)
             self._parser_process = ParserProcess(self.queue, store_reference=self._csv_process)
         else:
             self._parser_process = ParserProcess(self.queue)
@@ -83,11 +80,11 @@ class MainWindow(QtGui.QMainWindow):
             if self.ui.chBox_export.isChecked():
                 self._csv_process.start()
             self._acquisition_process.start()
-            self._timer_plot.start(PLOT_UPDATE_TIME_MS)
+            self._timer_plot.start(Constants.plot_update_ms)
             self._enable_ui(False)
         else:
             Log.i(TAG, "Port is not available")
-            PopUp.warning(self, "RTGraph", "Selected port \"{}\" is not available"
+            PopUp.warning(self, Constants.app_title, "Selected port \"{}\" is not available"
                           .format(self.ui.cBox_Port.currentText()))
 
     def stop(self):
@@ -101,16 +98,16 @@ class MainWindow(QtGui.QMainWindow):
         self._enable_ui(True)
         if self._acquisition_process is not None and self._acquisition_process.is_alive():
             self._acquisition_process.stop()
-            self._acquisition_process.join(JOIN_TIMEOUT_MS)
+            self._acquisition_process.join(Constants.process_join_timeout_ms)
             self._reset_buffers()
 
         if self._parser_process is not None and self._parser_process.is_alive():
             self._parser_process.stop()
-            self._parser_process.join(JOIN_TIMEOUT_MS)
+            self._parser_process.join(Constants.process_join_timeout_ms)
 
         if self._csv_process is not None and self._csv_process.is_alive():
             self._csv_process.stop()
-            self._csv_process.join(JOIN_TIMEOUT_MS)
+            self._csv_process.join(Constants.process_join_timeout_ms)
 
     def closeEvent(self, evnt):
         """
@@ -144,7 +141,7 @@ class MainWindow(QtGui.QMainWindow):
         self.ui.plt.setBackground(background=None)
         self.ui.plt.setAntialiasing(True)
         self._plt = self.ui.plt.addPlot(row=1, col=1)
-        self._plt.setLabel('bottom', 'Time', 's')
+        self._plt.setLabel('bottom', Constants.plot_xlabel_title, Constants.plot_xlabel_unit)
 
     def _configure_timers(self):
         """
@@ -171,7 +168,7 @@ class MainWindow(QtGui.QMainWindow):
         """
         samples = self.ui.sBox_Samples.value()
         self._data_buffers = []
-        for tmp in COLORS:
+        for tmp in Constants.plot_colors:
             self._data_buffers.append(RingBuffer(samples))
         self._time_buffer = RingBuffer(samples)
         while not self.queue.empty():
@@ -203,8 +200,8 @@ class MainWindow(QtGui.QMainWindow):
             # detect how many lines are present to plot
             size = len(value)
             if self.lines < size:
-                if size > len(COLORS):
-                    self.lines = len(COLORS)
+                if size > len(Constants.plot_colors):
+                    self.lines = len(Constants.plot_colors)
                 else:
                     self.lines = size
 
@@ -215,7 +212,9 @@ class MainWindow(QtGui.QMainWindow):
         # plot data
         self._plt.clear()
         for idx in range(self.lines):
-            self._plt.plot(x=self._time_buffer.get_all(), y=self._data_buffers[idx].get_all(), pen=COLORS[idx])
+            self._plt.plot(x=self._time_buffer.get_all(),
+                           y=self._data_buffers[idx].get_all(),
+                           pen=Constants.plot_colors[idx])
 
     def _source_changed(self):
         """
@@ -248,9 +247,3 @@ class MainWindow(QtGui.QMainWindow):
         :type: SourceType.
         """
         return SourceType(self.ui.cBox_Source.currentIndex())
-
-
-class SourceType(Enum):
-    simulator = 0
-    serial = 1
-

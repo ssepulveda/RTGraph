@@ -6,7 +6,9 @@ from serial.tools import list_ports
 
 from rtgraph.common.architecture import Architecture
 from rtgraph.common.architecture import OSType
+from rtgraph.core.constants import Constants
 from rtgraph.common.logger import Logger as Log
+
 
 TAG = "Serial"
 
@@ -24,7 +26,7 @@ class SerialProcess(multiprocessing.Process):
         self._serial = serial.Serial()
         Log.i(TAG, "Process ready")
 
-    def open(self, port, speed=115200, timeout=0.5):
+    def open(self, port, speed=Constants.serial_default_speed, timeout=Constants.serial_timeout_ms):
         """
         Opens a specified serial port.
         :param port: Serial port name.

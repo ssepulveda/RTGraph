@@ -4,6 +4,7 @@ import sys
 from enum import Enum
 
 from rtgraph.common.architecture import Architecture
+from rtgraph.core.constants import Constants
 
 
 class Logger:
@@ -19,7 +20,9 @@ class Logger:
         self.logger = logging.getLogger()
         self.logger.setLevel(level.value)
 
-        file_handler = logging.handlers.RotatingFileHandler("RTGraph.log", maxBytes=(10240 * 5), backupCount=0)
+        file_handler = logging.handlers.RotatingFileHandler(Constants.log_filename,
+                                                            maxBytes=Constants.log_max_bytes,
+                                                            backupCount=0)
         file_handler.setFormatter(log_format_file)
         self.logger.addHandler(file_handler)
 

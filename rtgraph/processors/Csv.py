@@ -3,7 +3,9 @@ import multiprocessing
 import os.path
 from time import strftime, gmtime, sleep
 
+from rtgraph.core.constants import Constants
 from rtgraph.common.logger import Logger as Log
+
 
 TAG = "CSV"
 
@@ -18,7 +20,7 @@ class CSVProcess(multiprocessing.Process):
         self._timeout = timeout
 
         if filename is None:
-            filename = strftime("%Y-%m-%d_%H-%M-%S", gmtime())
+            filename = strftime(Constants.csv_default_filename, gmtime())
 
         self._file = self._create_file(filename, path=path)
 
@@ -32,7 +34,7 @@ class CSVProcess(multiprocessing.Process):
 
     def run(self):
         Log.i(TAG, "Process starting...")
-        self._csv = csv.writer(self._file, delimiter=',', quoting=csv.QUOTE_MINIMAL)
+        self._csv = csv.writer(self._file, delimiter=Constants.csv_delimiter, quoting=csv.QUOTE_MINIMAL)
         while not self._exit.is_set():
             if not self._store_queue.empty():
                 while not self._store_queue.empty():
@@ -48,7 +50,7 @@ class CSVProcess(multiprocessing.Process):
         self._exit.set()
 
     @staticmethod
-    def _create_file(filename, path=None, extension="csv"):
+    def _create_file(filename, path=None, extension=Constants.csv_extension):
         if path is not None:
             if not os.path.isdir(path):
                 os.makedirs(path)

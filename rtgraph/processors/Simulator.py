@@ -3,7 +3,9 @@ from time import time, sleep
 
 import numpy as np
 
+from rtgraph.core.constants import Constants
 from rtgraph.common.logger import Logger as Log
+
 
 TAG = "Simulator"
 
@@ -21,7 +23,7 @@ class SimulatorProcess(multiprocessing.Process):
         self._parser = parser_process
         Log.i(TAG, "Process Ready")
 
-    def open(self, port=None, speed=0.002, timeout=0.5):
+    def open(self, port=None, speed=Constants.simulator_default_speed, timeout=0.5):
         """
         Opens a specified serial port.
         :param port: Not used.
@@ -46,7 +48,8 @@ class SimulatorProcess(multiprocessing.Process):
         sin_coef = 2 * np.pi
         while not self._exit.is_set():
             stamp = time() - timestamp
-            self._parser.add([stamp, str(("{}\r\n".format(np.sin(sin_coef * stamp)))).encode("UTF-8")])
+            self._parser.add([stamp, str(("{}\r\n".format(np.sin(sin_coef * stamp))))
+                             .encode(Constants.app_encoding)])
             sleep(self._period)
         Log.i(TAG, "Process finished")
 
