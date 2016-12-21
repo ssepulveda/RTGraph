@@ -1,16 +1,9 @@
-import multiprocessing
-from enum import Enum
-
 from rtgraph.ui.mainWindow_ui import *
 
-from rtgraph.common.logger import Logger as Log
-from rtgraph.core.ringBuffer import RingBuffer
+from rtgraph.core.worker import Worker
 from rtgraph.core.constants import Constants, SourceType
-from rtgraph.processors.Csv import CSVProcess
-from rtgraph.processors.Parser import ParserProcess
-from rtgraph.processors.Serial import SerialProcess
-from rtgraph.processors.Simulator import SimulatorProcess
 from rtgraph.ui.popUp import PopUp
+from rtgraph.common.logger import Logger as Log
 
 
 TAG = "MainWindow"
@@ -34,13 +27,7 @@ class MainWindow(QtGui.QMainWindow):
         # Shared variables, initial values
         self._plt = None
         self._timer_plot = None
-        self._data_buffers = None
-        self._time_buffer = None
-        self._acquisition_process = None
-        self._parser_process = None
-        self._csv_process = None
-        self.lines = 0
-        self.queue = multiprocessing.Queue()
+        self.worker = Worker()
 
         # configures
         self.ui.cBox_Source.addItems(Constants.app_sources)
@@ -49,6 +36,7 @@ class MainWindow(QtGui.QMainWindow):
         self._configure_signals()
 
         # populate combo box for serial ports
+        self._source_changed()
         self.ui.cBox_Source.setCurrentIndex(SourceType.serial.value)
 
         self.ui.sBox_Samples.setValue(samples)
@@ -63,23 +51,12 @@ class MainWindow(QtGui.QMainWindow):
         :return:
         """
         Log.i(TAG, "Clicked start")
-        self._reset_buffers()
-        port = self.ui.cBox_Port.currentText()
-        if self.ui.chBox_export.isChecked():
-            self._csv_process = CSVProcess(path=Constants.app_export_path)
-            self._parser_process = ParserProcess(self.queue, store_reference=self._csv_process)
-        else:
-            self._parser_process = ParserProcess(self.queue)
-
-        if self._get_source() == SourceType.serial:
-            self._acquisition_process = SerialProcess(self._parser_process)
-        elif self._get_source() == SourceType.simulator:
-            self._acquisition_process = SimulatorProcess(self._parser_process)
-        if self._acquisition_process.open(port=port, speed=float(self.ui.cBox_Speed.currentText())):
-            self._parser_process.start()
-            if self.ui.chBox_export.isChecked():
-                self._csv_process.start()
-            self._acquisition_process.start()
+        self.worker = Worker(port=self.ui.cBox_Port.currentText(),
+                             speed=float(self.ui.cBox_Speed.currentText()),
+                             samples=self.ui.sBox_Samples.value(),
+                             source=self._get_source(),
+                             export_enabled=self.ui.chBox_export.isChecked())
+        if self.worker.start():
             self._timer_plot.start(Constants.plot_update_ms)
             self._enable_ui(False)
         else:
@@ -96,18 +73,7 @@ class MainWindow(QtGui.QMainWindow):
         Log.i(TAG, "Clicked stop")
         self._timer_plot.stop()
         self._enable_ui(True)
-        if self._acquisition_process is not None and self._acquisition_process.is_alive():
-            self._acquisition_process.stop()
-            self._acquisition_process.join(Constants.process_join_timeout_ms)
-            self._reset_buffers()
-
-        if self._parser_process is not None and self._parser_process.is_alive():
-            self._parser_process.stop()
-            self._parser_process.join(Constants.process_join_timeout_ms)
-
-        if self._csv_process is not None and self._csv_process.is_alive():
-            self._csv_process.stop()
-            self._csv_process.join(Constants.process_join_timeout_ms)
+        self.worker.stop()
 
     def closeEvent(self, evnt):
         """
@@ -116,7 +82,7 @@ class MainWindow(QtGui.QMainWindow):
         :param evnt: QT evnt.
         :return:
         """
-        if self._acquisition_process is not None and self._acquisition_process.is_alive():
+        if self.worker.is_running():
             Log.i(TAG, "Window closed without stopping capture, stopping it")
             self.stop()
 
@@ -161,28 +127,15 @@ class MainWindow(QtGui.QMainWindow):
         self.ui.sBox_Samples.valueChanged.connect(self._update_sample_size)
         self.ui.cBox_Source.currentIndexChanged.connect(self._source_changed)
 
-    def _reset_buffers(self):
-        """
-        Set up/clear the internal buffers used to store and display the signals.
-        :return:
-        """
-        samples = self.ui.sBox_Samples.value()
-        self._data_buffers = []
-        for tmp in Constants.plot_colors:
-            self._data_buffers.append(RingBuffer(samples))
-        self._time_buffer = RingBuffer(samples)
-        while not self.queue.empty():
-            self.queue.get()
-        Log.i(TAG, "Buffers cleared")
-
     def _update_sample_size(self):
         """
         Updates the sample size of the plot.
         This function is connected to the valueChanged signal of the sample Spin Box.
         :return:
         """
-        Log.i(TAG, "Changing sample size")
-        self._reset_buffers()
+        if self.worker is not None:
+            Log.i(TAG, "Changing sample size")
+            self.worker.reset_buffers(self.ui.sBox_Samples.value())
 
     def _update_plot(self):
         """
@@ -190,30 +143,17 @@ class MainWindow(QtGui.QMainWindow):
         This function us connected to the timeout signal of a QTimer.
         :return:
         """
-        while not self.queue.empty():
-            data = self.queue.get(False)
-
+        while not self.worker.queue.empty():
+            data = self.worker.queue.get(False)
             # add timestamp
-            self._time_buffer.append(data[0])
-            value = data[1]
-
-            # detect how many lines are present to plot
-            size = len(value)
-            if self.lines < size:
-                if size > len(Constants.plot_colors):
-                    self.lines = len(Constants.plot_colors)
-                else:
-                    self.lines = size
-
-            # store the data in respective buffers
-            for idx in range(self.lines):
-                self._data_buffers[idx].append(value[idx])
+            self.worker.add_time(data[0])
+            self.worker.add_values(data[1])
 
         # plot data
         self._plt.clear()
-        for idx in range(self.lines):
-            self._plt.plot(x=self._time_buffer.get_all(),
-                           y=self._data_buffers[idx].get_all(),
+        for idx in range(self.worker.get_lines()):
+            self._plt.plot(x=self.worker.get_time_buffer(),
+                           y=self.worker.get_values_buffer(idx),
                            pen=Constants.plot_colors[idx])
 
     def _source_changed(self):
@@ -227,18 +167,13 @@ class MainWindow(QtGui.QMainWindow):
         self.ui.cBox_Port.clear()
         self.ui.cBox_Speed.clear()
 
-        if self._get_source() == SourceType.serial:
-            speeds = SerialProcess.get_speeds()
-            self.ui.cBox_Speed.addItems(speeds)
-            self.ui.cBox_Speed.setCurrentIndex(len(speeds) - 1)
-            ports = SerialProcess.get_ports()
-            if len(ports) > 0:
-                self.ui.cBox_Port.addItems(ports)
-        elif self._get_source() == SourceType.simulator:
-            self.ui.cBox_Speed.addItems(SimulatorProcess.get_speeds())
-            self.ui.cBox_Port.addItems(SimulatorProcess.get_ports())
-        else:
-            Log.w(TAG, "Unknown source selected")
+        source = self._get_source()
+        ports = self.worker.get_source_ports(source)
+        speeds = self.worker.get_source_speeds(source)
+
+        self.ui.cBox_Port.addItems(ports)
+        self.ui.cBox_Speed.addItems(speeds)
+        self.ui.cBox_Speed.setCurrentIndex(len(speeds) - 1)
 
     def _get_source(self):
         """
