@@ -30,6 +30,8 @@ class Constants:
 
     log_filename = "{}.log".format(app_title)
     log_max_bytes = 5120
+    log_default_level = 1
+    log_default_console_log = False
 
 
 class MinimalPython:

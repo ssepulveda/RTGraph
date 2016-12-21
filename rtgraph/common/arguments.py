@@ -24,10 +24,17 @@ class Arguments:
                             help="Enable info messages"
                             )
 
-        parser.add_argument("-v", "-d", "--debug",
+        parser.add_argument("-d", "--debug",
                             dest="log_level_debug",
                             action='store_true',
                             help="Enable debug messages"
+                            )
+
+        parser.add_argument("-v", "--verbose",
+                            dest="log_to_console",
+                            action='store_true',
+                            help="Show log messages in console",
+                            default=Constants.log_default_console_log
                             )
 
         parser.add_argument("-s", "--samples",
@@ -55,14 +62,18 @@ class Arguments:
         """
         return int(self._parser.user_samples)
 
+    def get_console_log(self):
+        return self._parser.log_to_console
+
     def _parse_log_level(self):
         """
         Sets the log level depending on user specification.
         :return:
         """
+        log_to_console = self.get_console_log()
         if self._parser.log_level_info:
-            Log(LoggerLevel.INFO)
+            Log(LoggerLevel.INFO, enable_console=log_to_console)
         elif self._parser.log_level_debug:
-            Log(LoggerLevel.DEBUG)
+            Log(LoggerLevel.DEBUG, enable_console=log_to_console)
         else:
-            Log(LoggerLevel.WARNING)
+            Log(LoggerLevel.INFO, enable_console=log_to_console)

@@ -8,7 +8,7 @@ from rtgraph.core.constants import Constants
 
 
 class Logger:
-    def __init__(self, level):
+    def __init__(self, level, enable_console=False):
         """
         Constructor for Logger (wrapper of logging).
         Creates both console (stdout) logging and file logging (as csv).
@@ -20,15 +20,17 @@ class Logger:
         self.logger = logging.getLogger()
         self.logger.setLevel(level.value)
 
-        file_handler = logging.handlers.RotatingFileHandler(Constants.log_filename,
+        file_handler = logging.handlers.RotatingFileHandler("{}/{}"
+                                                            .format(Constants.app_export_path, Constants.log_filename),
                                                             maxBytes=Constants.log_max_bytes,
                                                             backupCount=0)
         file_handler.setFormatter(log_format_file)
         self.logger.addHandler(file_handler)
 
-        console_handler = logging.StreamHandler(sys.stdout)
-        console_handler.setFormatter(log_format_console)
-        self.logger.addHandler(console_handler)
+        if enable_console:
+            console_handler = logging.StreamHandler(sys.stdout)
+            console_handler.setFormatter(log_format_console)
+            self.logger.addHandler(console_handler)
 
         self._show_user_info()
 
