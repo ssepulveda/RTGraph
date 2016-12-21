@@ -2,6 +2,9 @@ from enum import Enum
 
 
 class Constants:
+    """
+    Common constants for the application.
+    """
     app_title = "RTGraph"
     app_version = '0.2.0'
     app_export_path = "data"
@@ -35,12 +38,18 @@ class Constants:
 
 
 class MinimalPython:
+    """
+    Specifies the minimal Python version required.
+    """
     major = 3
     minor = 2
     release = 0
 
 
 class SourceType(Enum):
+    """
+    Enum for the types of sources. Indices MUST match app_sources constant.
+    """
     simulator = 1
     serial = 0
 
