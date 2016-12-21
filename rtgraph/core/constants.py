@@ -4,7 +4,7 @@ from enum import Enum
 class Constants:
     app_title = "RTGraph"
     app_version = '0.2.0'
-    app_export_path = "../data"
+    app_export_path = "data"
     app_sources = ["Serial", "Simulator"]
     app_encoding = "utf-8"
 
