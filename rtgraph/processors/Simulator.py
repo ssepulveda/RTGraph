@@ -11,6 +11,9 @@ TAG = "Simulator"
 
 
 class SimulatorProcess(multiprocessing.Process):
+    """
+    Simulates signals and converts them as raw data to feed the processes.
+    """
     def __init__(self, parser_process):
         """
         Initialises values for process.
@@ -27,12 +30,13 @@ class SimulatorProcess(multiprocessing.Process):
         """
         Opens a specified serial port.
         :param port: Not used.
-        :type port: basestring
+        :type port: str.
         :param speed: Period of the generated signal.
-        :type speed: float
+        :type speed: float.
         :param timeout: Not used.
-        :type timeout: float
+        :type timeout: float.
         :return: True if the port is available.
+        :rtype: bool.
         """
         self._period = float(speed)
         Log.i(TAG, "Using sample rate at {}".format(self._period))
@@ -40,7 +44,7 @@ class SimulatorProcess(multiprocessing.Process):
 
     def run(self):
         """
-        Simulates data comming as CSV
+        Simulates raw data incoming as CSV.
         :return:
         """
         Log.i(TAG, "Process starting...")
@@ -66,6 +70,7 @@ class SimulatorProcess(multiprocessing.Process):
         """
         Gets a list of the available ports.
         :return: List of available ports.
+        :rtype: str list.
         """
         return ["Sine Simulator"]
 
@@ -74,5 +79,6 @@ class SimulatorProcess(multiprocessing.Process):
         """
         Gets a list of the speeds.
         :return: List of the speeds.
+        :rtype: str list.
         """
         return [str(v) for v in [0.002, 0.004, 0.005, 0.010, 0.020, 0.050, 0.100, 0.250]]

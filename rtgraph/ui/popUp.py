@@ -8,10 +8,11 @@ class PopUp:
         Shows a Pop up question dialog with yes and no buttons.
         :param parent: Parent window for the dialog.
         :param title: Title of the dialog.
-        :type title: basestring
+        :type title: str.
         :param message: Message to be shown in the content of the dialog.
-        :type message: basestring
+        :type message: str.
         :return: True if the Yes button was pressed in the dialog.
+        :rtype: bool.
         """
         ans = QtGui.QMessageBox.question(parent,
                                          title,
@@ -29,9 +30,9 @@ class PopUp:
         Shows a Pop up warning dialog with a Ok buttons.
         :param parent: Parent window for the dialog.
         :param title: Title of the dialog.
-        :type title: basestring
+        :type title: str.
         :param message: Message to be shown in the content of the dialog.
-        :type message: basestring
+        :type message: str.
         :return:
         """
         QtGui.QMessageBox.warning(parent, title, message, QtGui.QMessageBox.Ok)

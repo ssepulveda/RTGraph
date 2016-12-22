@@ -11,7 +11,7 @@ class FileManager:
         """
         Creates a directory if the specified doesn't exists.
         :param path: Directory name or full path.
-        :type path: basestring.
+        :type path: str.
         :return: True if the specified directory exists.
         :rtype: bool.
         """
@@ -25,13 +25,13 @@ class FileManager:
         """
         Creates a file full path based on parameters.
         :param filename: Name for the file.
-        :type filename: basestring.
+        :type filename: str.
         :param extension: Extension for the file.
-        :type extension: basestring.
+        :type extension: str.
         :param path: Path for the file, if needed.
-        :type path: basestring.
+        :type path: str.
         :return: Full path for the specified file.
-        :rtype: basestring.
+        :rtype: str.
         """
         if path is None:
             full_path = str("{}.{}".format(filename, extension))
@@ -44,7 +44,7 @@ class FileManager:
         """
         Checks if a file exists.
         :param filename: Name of the file, including path.
-        :type filename: basestring.
+        :type filename: str.
         :return: True if the file exists.
         :rtype: bool.
         """

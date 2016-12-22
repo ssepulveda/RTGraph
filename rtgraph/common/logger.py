@@ -53,9 +53,9 @@ class Logger:
         """
         Logs at debug level.
         :param tag: TAG to identify the log.
-        :type tag: basestring.
+        :type tag: str.
         :param msg: Message to log.
-        :type msg: basestring.
+        :type msg: str.
         :return:
         """
         logging.debug("[{}] {}".format(str(tag), str(msg)))
@@ -65,9 +65,9 @@ class Logger:
         """
         Logs at info level.
         :param tag: TAG to identify the log.
-        :type tag: basestring.
+        :type tag: str.
         :param msg: Message to log.
-        :type msg: basestring.
+        :type msg: str.
         :return:
         """
         logging.info("[{}] {}".format(str(tag), str(msg)))
@@ -77,9 +77,9 @@ class Logger:
         """
         Logs at warning level.
         :param tag: TAG to identify the log.
-        :type tag: basestring.
+        :type tag: str.
         :param msg: Message to log.
-        :type msg: basestring.
+        :type msg: str.
         :return:
         """
         logging.warning("[{}] {}".format(str(tag), str(msg)))
@@ -89,9 +89,9 @@ class Logger:
         """
         Logs at error level.
         :param tag: TAG to identify the log.
-        :type tag: basestring.
+        :type tag: str.
         :param msg: Message to log.
-        :type msg: basestring.
+        :type msg: str.
         :return:
         """
         logging.error("[{}] {}".format(str(tag), str(msg)))

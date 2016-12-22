@@ -26,7 +26,7 @@ class Worker:
         """
         Creates and orchestrates all processes involved in data acquisition, processing and storing.
         :param port: Port to open on start.
-        :type port: basestring.
+        :type port: str.
         :param speed: Speed for the specified port (depending on source).
         :type speed: float.
         :param samples: Number of samples to keep in the buffers (should match with plot samples).
@@ -36,7 +36,7 @@ class Worker:
         :param export_enabled: If true, data will be stored or exported in a file.
         :type export_enabled: bool.
         :param export_path: If specified, defines where the data will be exported.
-        :type export_path: basestring.
+        :type export_path: str.
         """
         self.queue = Queue()
         self._data_buffers = None
@@ -158,7 +158,7 @@ class Worker:
         :param source: Source to get available ports.
         :type source: SourceType.
         :return: List of available ports.
-        :rtype: basestring list.
+        :rtype: str list.
         """
         if source == SourceType.serial:
             return SerialProcess.get_ports()
@@ -175,7 +175,7 @@ class Worker:
         :param source: Source to get available speeds.
         :type source: SourceType.
         :return: List of available speeds.
-        :rtype: basestring list.
+        :rtype: str list.
         """
         if source == SourceType.serial:
             return SerialProcess.get_speeds()

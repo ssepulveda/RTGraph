@@ -14,6 +14,9 @@ TAG = "Serial"
 
 
 class SerialProcess(multiprocessing.Process):
+    """
+    Wrapper for serial package into a multiprocessing instance.
+    """
     def __init__(self, parser_process):
         """
         Initialises values for process.
@@ -30,12 +33,13 @@ class SerialProcess(multiprocessing.Process):
         """
         Opens a specified serial port.
         :param port: Serial port name.
-        :type port: basestring
+        :type port: str.
         :param speed: Baud rate, in bps, to connect to port.
-        :type speed: int
+        :type speed: int.
         :param timeout: Sets the general connection timeout.
-        :type timeout: float
+        :type timeout: float.
         :return: True if the port is available.
+        :rtype: bool.
         """
         self._serial.port = port
         self._serial.baudrate = int(speed)
@@ -80,6 +84,7 @@ class SerialProcess(multiprocessing.Process):
         """
         Gets a list of the available serial ports.
         :return: List of available serial ports.
+        :rtype: str list.
         """
         if Architecture.get_os() is OSType.macosx:
             import glob
@@ -96,6 +101,7 @@ class SerialProcess(multiprocessing.Process):
         """
         Gets a list of the common serial baud rates, in bps.
         :return: List of the common baud rates, in bps.
+        :rtype: str list.
         """
         return [str(v) for v in [1200, 2400, 4800, 9600, 19200, 38400, 57600, 115200]]
 
@@ -104,6 +110,7 @@ class SerialProcess(multiprocessing.Process):
         Checks is the port is currently connected to the host.
         :param port: Port name to be verified.
         :return: True if the port is connected to the host.
+        :rtype: bool.
         """
         for p in self.get_ports():
             if p == port:

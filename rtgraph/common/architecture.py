@@ -30,7 +30,7 @@ class Architecture:
         """
         Gets the current OS name string of the host (as reported by platform).
         :return: OS name.
-        :rtype: basestring.
+        :rtype: str.
         """
         return platform.platform()
 
@@ -39,7 +39,7 @@ class Architecture:
         """
         Gets the PWD or CWD of the currently running application.
         :return: Path of the PWD or CWD.
-        :rtype: basestring.
+        :rtype: str.
         """
         return sys.path[0]
 
@@ -48,7 +48,7 @@ class Architecture:
         """
         Gets the running Python version (Major, minor, release).
         :return: Python version formatted as major.minor.release.
-        :rtype: basestring.
+        :rtype: str.
         """
         version = sys.version_info
         return str("{}.{}.{}".format(version[0], version[1], version[2]))

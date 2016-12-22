@@ -10,15 +10,18 @@ TAG = "MainWindow"
 
 
 class MainWindow(QtGui.QMainWindow):
+    """
+    Handles the ui elements and connects to worker service to execute processes.
+    """
     def __init__(self, port=None, bd=115200, samples=500):
         """
         Initializes values for the UI.
         :param port: Default port name to be used. It will also disable scanning available ports.
-        :type port: basestring
+        :type port: str.
         :param bd: Default baud rate to be used. It will be added to the common baud rate list if not available.
-        :type bd: int
+        :type bd: int.
         :param samples: Default samples per second to be shown in the plot.
-        :type samples: int
+        :type samples: int.
         """
         QtGui.QMainWindow.__init__(self)
         self.ui = Ui_MainWindow()
@@ -180,6 +183,6 @@ class MainWindow(QtGui.QMainWindow):
         """
         Gets the current source type.
         :return: Current Source type.
-        :type: SourceType.
+        :rtype: SourceType.
         """
         return SourceType(self.ui.cBox_Source.currentIndex())
