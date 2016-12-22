@@ -49,10 +49,10 @@ class SimulatorProcess(multiprocessing.Process):
         """
         Log.i(TAG, "Process starting...")
         timestamp = time()
-        sin_coef = 2 * np.pi
+        coef = 2 * np.pi
         while not self._exit.is_set():
             stamp = time() - timestamp
-            self._parser.add([stamp, str(("{}\r\n".format(np.sin(sin_coef * stamp))))
+            self._parser.add([stamp, str(("{},{}\r\n".format(np.sin(coef * stamp), np.cos(coef * stamp))))
                              .encode(Constants.app_encoding)])
             sleep(self._period)
         Log.i(TAG, "Process finished")

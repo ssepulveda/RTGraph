@@ -109,8 +109,8 @@ class Worker:
         # detect how many lines are present to plot
         size = len(values)
         if self._lines < size:
-            if size > len(Constants.plot_colors):
-                self._lines = len(Constants.plot_colors)
+            if size > Constants.plot_max_lines:
+                self._lines = Constants.plot_max_lines
             else:
                 self._lines = size
 

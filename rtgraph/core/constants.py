@@ -15,6 +15,7 @@ class Constants:
     plot_xlabel_title = "Time"
     plot_xlabel_unit = "s"
     plot_colors = ['#0072bd', '#d95319', '#edb120', '#7e2f8e', '#77ac30', '#4dbeee', '#a2142f']
+    plot_max_lines = len(plot_colors)
 
     process_join_timeout_ms = 1000
 
@@ -29,7 +30,7 @@ class Constants:
     csv_delimiter = ","
     csv_extension = "csv"
 
-    parser_timeout_ms = 0.05
+    parser_timeout_ms = 0.001
 
     log_filename = "{}.log".format(app_title)
     log_max_bytes = 5120
