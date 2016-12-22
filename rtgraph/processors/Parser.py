@@ -83,6 +83,8 @@ class ParserProcess(multiprocessing.Process):
                 self._out_queue.put((time, values))
                 if self._store_reference is not None:
                     self._store_reference.add(time, values)
-            except:
-                Log.w(TAG, "Wrong format? raw: {}".format(line.strip()))
+            except ValueError:
+                Log.w(TAG, "Can't convert to float. Raw: {}".format(line.strip()))
+            except AttributeError:
+                Log.w(TAG, "Input is not API expected type ({}). Raw: {}".format(type(line), line.strip()))
 
