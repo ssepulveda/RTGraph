@@ -57,7 +57,7 @@ class MainWindow(QtGui.QMainWindow):
                              source=self._get_source(),
                              export_enabled=self.ui.chBox_export.isChecked())
         if self.worker.start():
-            self._timer_plot.start(Constants.plot_update_ms)
+            self._timer_plot.run(Constants.plot_update_ms)
             self._enable_ui(False)
         else:
             Log.i(TAG, "Port is not available")

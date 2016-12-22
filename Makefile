@@ -4,7 +4,7 @@ gui:
 	$(MAKE) -C rtgraph/res
 
 run:
-	python RTGraph.py -v
+	python -m rtgraph -v
 
 doc:
 	$(MAKE) html -C docs

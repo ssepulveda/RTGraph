@@ -1,4 +1,4 @@
-import multiprocessing
+from multiprocessing import freeze_support
 import sys
 from PyQt4 import QtGui
 
@@ -14,24 +14,26 @@ TAG = "RTGraph"
 
 class RTGraph:
     def __init__(self, argv=sys.argv):
-        self.args = self._init_logger()
-        self.app = QtGui.QApplication(argv)
+        freeze_support()
+        self._args = self._init_logger()
+        self._app = QtGui.QApplication(argv)
 
-    def start(self):
+    def run(self):
         if Architecture.is_python_version(MinimalPython.major, minor=MinimalPython.minor):
             Log.i(TAG, "Starting RTGraph")
-            win = mainWindow.MainWindow(samples=self.args.get_user_samples())
+            win = mainWindow.MainWindow(samples=self._args.get_user_samples())
             win.setWindowTitle("{} - {}".format(Constants.app_title, Constants.app_version))
             win.show()
-            self.app.exec()
+            self._app.exec()
 
             Log.i(TAG, "Finishing RTGraph\n")
             win.close()
         else:
             self._fail()
+        self.close()
 
     def close(self):
-        self.app.exit()
+        self._app.exit()
         Log.close()
         sys.exit()
 
@@ -50,10 +52,4 @@ class RTGraph:
 
 
 if __name__ == '__main__':
-    multiprocessing.freeze_support()
-    app = RTGraph()
-    app.start()
-    app.close()
-
-
-
+    RTGraph().run()
