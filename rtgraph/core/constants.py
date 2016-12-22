@@ -30,7 +30,7 @@ class Constants:
     csv_delimiter = ","
     csv_extension = "csv"
 
-    parser_timeout_ms = 0.001
+    parser_timeout_ms = 0.005
 
     log_filename = "{}.log".format(app_title)
     log_max_bytes = 5120
