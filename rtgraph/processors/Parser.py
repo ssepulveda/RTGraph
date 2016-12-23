@@ -52,10 +52,10 @@ class ParserProcess(multiprocessing.Process):
         """
         Log.d(TAG, "Process starting...")
         while not self._exit.is_set():
-            while not self._in_queue.empty():
-                queue = self._in_queue.get(timeout=self._timeout)
-                self._parse_csv(queue[0], queue[1])
+            self._consume_queue()
             sleep(self._timeout)
+        # last check on the queue to completely remove data.
+        self._consume_queue()
         Log.d(TAG, "Process finished")
 
     def stop(self):
@@ -65,6 +65,11 @@ class ParserProcess(multiprocessing.Process):
         """
         Log.d(TAG, "Process finishing...")
         self._exit.set()
+
+    def _consume_queue(self):
+        while not self._in_queue.empty():
+            queue = self._in_queue.get(timeout=self._timeout)
+            self._parse_csv(queue[0], queue[1])
 
     def _parse_csv(self, time, line):
         """
@@ -77,7 +82,12 @@ class ParserProcess(multiprocessing.Process):
         """
         if len(line) > 0:
             try:
-                values = line.decode("UTF-8").split(self._split)
+                if type(line) == bytes:
+                    values = line.decode("UTF-8").split(self._split)
+                elif type(line) == str:
+                    values = line.split(self._split)
+                else:
+                    Log.e(TAG, "Unexpected type for line values")
                 values = [float(v) for v in values]
                 Log.d(TAG, values)
                 self._out_queue.put((time, values))
@@ -86,5 +96,5 @@ class ParserProcess(multiprocessing.Process):
             except ValueError:
                 Log.w(TAG, "Can't convert to float. Raw: {}".format(line.strip()))
             except AttributeError:
-                Log.w(TAG, "Input is not API expected type ({}). Raw: {}".format(type(line), line.strip()))
+                Log.w(TAG, "Attribute error on type ({}). Raw: {}".format(type(line), line.strip()))
 
