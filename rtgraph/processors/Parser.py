@@ -87,7 +87,7 @@ class ParserProcess(multiprocessing.Process):
                 elif type(line) == str:
                     values = line.split(self._split)
                 else:
-                    Log.e(TAG, "Unexpected type for line values")
+                    raise TypeError
                 values = [float(v) for v in values]
                 Log.d(TAG, values)
                 self._out_queue.put((time, values))
