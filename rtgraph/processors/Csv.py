@@ -60,14 +60,24 @@ class CSVProcess(multiprocessing.Process):
         Log.i(TAG, "Process starting...")
         self._csv = csv.writer(self._file, delimiter=Constants.csv_delimiter, quoting=csv.QUOTE_MINIMAL)
         while not self._exit.is_set():
-            if not self._store_queue.empty():
-                while not self._store_queue.empty():
-                    data = self._store_queue.get(timeout=self._timeout/10)
-                    if data is not None:
-                        self._csv.writerow(data)
+            self._consume_queue()
             sleep(self._timeout)
+        # last check on the queue to completely remove data.
+        self._consume_queue()
         Log.i(TAG, "Process finished")
         self._file.close()
+
+    def _consume_queue(self):
+        """
+        Consumer method for the queues/process.
+        Used in run method to recall after a stop is requested, to ensure queue is emptied.
+        :return:
+        """
+        if not self._store_queue.empty():
+            while not self._store_queue.empty():
+                data = self._store_queue.get(timeout=self._timeout / 10)
+                if data is not None:
+                    self._csv.writerow(data)
 
     def stop(self):
         """

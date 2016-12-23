@@ -67,6 +67,11 @@ class ParserProcess(multiprocessing.Process):
         self._exit.set()
 
     def _consume_queue(self):
+        """
+        Consumer method for the queues/process.
+        Used in run method to recall after a stop is requested, to ensure queue is emptied.
+        :return:
+        """
         while not self._in_queue.empty():
             queue = self._in_queue.get(timeout=self._timeout)
             self._parse_csv(queue[0], queue[1])
