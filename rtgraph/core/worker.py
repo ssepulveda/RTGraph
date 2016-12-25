@@ -85,6 +85,7 @@ class Worker:
         Stops all running processes.
         :return:
         """
+        self.consume_queue()
         for process in [self._acquisition_process, self._parser_process, self._csv_process]:
             if process is not None and process.is_alive():
                 process.stop()
