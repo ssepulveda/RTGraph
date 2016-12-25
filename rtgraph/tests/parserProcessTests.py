@@ -25,7 +25,8 @@ class ParserProcessTests(unittest.TestCase):
 
     def test_random_data(self):
         result = []
-        values, original_values = self._create_samples(99)
+        # TODO: more than 2530 samples is leaving the queue full ?
+        values, original_values = self._create_samples(2530)
         parser, queue = self._create_parser()
         parser.start()
 
