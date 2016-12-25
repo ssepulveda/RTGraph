@@ -147,11 +147,7 @@ class MainWindow(QtGui.QMainWindow):
         This function us connected to the timeout signal of a QTimer.
         :return:
         """
-        while not self.worker.queue.empty():
-            data = self.worker.queue.get(False)
-            # add timestamp
-            self.worker.add_time(data[0])
-            self.worker.add_values(data[1])
+        self.worker.consume_queue()
 
         # plot data
         self._plt.clear()

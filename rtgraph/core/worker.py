@@ -38,7 +38,7 @@ class Worker:
         :param export_path: If specified, defines where the data will be exported.
         :type export_path: str.
         """
-        self.queue = Queue()
+        self._queue = Queue()
         self._data_buffers = None
         self._time_buffer = None
         self._lines = 0
@@ -62,9 +62,9 @@ class Worker:
         self.reset_buffers(self._samples)
         if self._export:
             self._csv_process = CSVProcess(path=self._path)
-            self._parser_process = ParserProcess(self.queue, store_reference=self._csv_process)
+            self._parser_process = ParserProcess(self._queue, store_reference=self._csv_process)
         else:
-            self._parser_process = ParserProcess(self.queue)
+            self._parser_process = ParserProcess(self._queue)
 
         if self._source == SourceType.serial:
             self._acquisition_process = SerialProcess(self._parser_process)
@@ -90,19 +90,30 @@ class Worker:
                 process.stop()
                 process.join(Constants.process_join_timeout_ms)
 
-    def add_time(self, time):
+    def consume_queue(self):
         """
-        Adds time data to internal time buffer.
-        :param time: Time value to add to internal buffer.
-        :type time: float.
+        Empties the internal queue, updating data to consumers.
         :return:
         """
-        self._time_buffer.append(time)
+        while not self._queue.empty():
+            self._store_data(self._queue.get(False))
 
-    def add_values(self, values):
+    def _store_data(self, data):
         """
-        Adds value data to internal data buffer.
-        :param values: values to add to internal buffers.
+        Adds data to internal time and data buffers.
+        :param data: values to add to internal buffers.
+        :type data: list.
+        :return:
+        """
+        # Add timestamp
+        self._time_buffer.append(data[0])
+        # Add values
+        self._store_signal_values(data[1])
+
+    def _store_signal_values(self, values):
+        """
+        Stores the signal values in internal buffers.
+        :param values: Values to store.
         :type values: float list.
         :return:
         """
@@ -196,6 +207,6 @@ class Worker:
         for tmp in Constants.plot_colors:
             self._data_buffers.append(RingBuffer(samples))
         self._time_buffer = RingBuffer(samples)
-        while not self.queue.empty():
-            self.queue.get()
+        while not self._queue.empty():
+            self._queue.get()
         Log.i(TAG, "Buffers cleared")

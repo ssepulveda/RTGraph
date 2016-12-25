@@ -22,12 +22,9 @@ class WorkerTests(unittest.TestCase):
                         source=SourceType.simulator,
                         export_enabled=False)
         worker.start()
-        while time > 0:
-            while not worker.queue.empty():
-                worker.add_values(worker.queue.get(False)[1])
-            sleep(speed)
-            time -= speed
+        sleep(time)
         worker.stop()
+        worker.consume_queue()
 
         for v in worker.get_values_buffer(0):
             if v == 0:
