@@ -14,7 +14,7 @@ class ParserProcess(multiprocessing.Process):
     """
     def __init__(self, data_queue, store_reference=None,
                  split=Constants.csv_delimiter,
-                 timeout=Constants.parser_timeout_ms):
+                 consumer_timeout=Constants.parser_timeout_ms):
         """
 
         :param data_queue: Reference to Queue where processed data will be put.
@@ -23,14 +23,14 @@ class ParserProcess(multiprocessing.Process):
         :type store_reference: CSVProcess (multiprocessing.Process)
         :param split: Delimiter in incoming data.
         :type split: str.
-        :param timeout: Time to wait after emptying the internal buffer before next parsing.
-        :type timeout: float.
+        :param consumer_timeout: Time to wait after emptying the internal buffer before next parsing.
+        :type consumer_timeout: float.
         """
         multiprocessing.Process.__init__(self)
         self._exit = multiprocessing.Event()
         self._in_queue = multiprocessing.Queue()
         self._out_queue = data_queue
-        self._timeout = timeout
+        self._consumer_timeout = consumer_timeout
         self._split = split
         self._store_reference = store_reference
         Log.d(TAG, "Process ready")
@@ -53,7 +53,7 @@ class ParserProcess(multiprocessing.Process):
         Log.d(TAG, "Process starting...")
         while not self._exit.is_set():
             self._consume_queue()
-            sleep(self._timeout)
+            sleep(self._consumer_timeout)
         # last check on the queue to completely remove data.
         self._consume_queue()
         Log.d(TAG, "Process finished")
@@ -73,7 +73,7 @@ class ParserProcess(multiprocessing.Process):
         :return:
         """
         while not self._in_queue.empty():
-            queue = self._in_queue.get(timeout=self._timeout)
+            queue = self._in_queue.get(timeout=self._consumer_timeout)
             self._parse_csv(queue[0], queue[1])
 
     def _parse_csv(self, time, line):
