@@ -9,13 +9,12 @@ class WorkerTests(unittest.TestCase):
     def test_one(self):
         time = 2
         speed = 0.02
-        error = 0.8
+        error = 0.95
         zeros = 0
         passed = False
-        expected_samples = (time * (1/speed))
-        samples_plus_error = (expected_samples / error)
+        samples = int(time * (1/speed))
+        samples_plus_error = int(samples / error)
 
-        # Log(LoggerLevel.DEBUG, enable_console=True)
         worker = Worker(port=None,
                         speed=float(speed),
                         samples=int(samples_plus_error),
@@ -30,7 +29,7 @@ class WorkerTests(unittest.TestCase):
             if v == 0:
                 zeros += 1
 
-        if 0 < zeros <= (samples_plus_error - expected_samples):
+        if 0 < zeros <= ((samples_plus_error - samples) * 2):
             passed = True
         self.assertTrue(passed)
 

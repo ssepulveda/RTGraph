@@ -38,7 +38,7 @@ class SimulatorProcess(multiprocessing.Process):
         :return: True if the port is available.
         :rtype: bool.
         """
-        self._period = float(speed/2)
+        self._period = float(speed)
         Log.i(TAG, "Using sample rate at {}".format(self._period))
         return True
 
