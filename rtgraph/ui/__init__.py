@@ -1,0 +1,3 @@
+"""
+UI related scripts.
+"""
