@@ -8,10 +8,10 @@ RES_FILES = $(wildcard *.qrc)
 OUT_FOLDER = ../ui/
 
 # Binaries
-# PYUIC = pyuic5
-# PYRCC = pyrcc5
-PYUIC = pyuic4
-PYRCC = pyrcc4
+PYUIC = pyuic5
+PYRCC = pyrcc5
+# PYUIC = pyuic4
+# PYRCC = pyrcc4
 
 PY_UI_FILES = $(UI_FILES:%.ui=%_ui.py)
 PY_RES_FILES = $(RES_FILES:%.qrc=%_rc.py)
