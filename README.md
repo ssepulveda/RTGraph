@@ -29,8 +29,8 @@ From a terminal, on the root folder of the project, run:
 - `python -m rtgraph`
 
 ## Links
-- [Visualizing Physiological Signals in Real Time. SciPy 2015](https://www.youtube.com/watch?v=yNOJ_NfzI64&index=1&list=PLiOqvn0zxKhOy6WKGYMz3wHxJRN_zGCvD&t=896s)
-- [Visualizing physiological signals in real-time](http://conference.scipy.org/proceedings/scipy2015/pdfs/sebastian_sepulveda.pdf)
+- [Presentation on SciPy 2015](https://www.youtube.com/watch?v=yNOJ_NfzI64&index=1&list=PLiOqvn0zxKhOy6WKGYMz3wHxJRN_zGCvD&t=896s)
+- [Proceedings on SciPy 2015](http://conference.scipy.org/proceedings/scipy2015/pdfs/sebastian_sepulveda.pdf)
 
 ## License and Citations
 The project is distributed under MIT License. A DOI is attached to the project for citations.
