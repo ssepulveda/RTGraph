@@ -1,6 +1,6 @@
 from multiprocessing import freeze_support
 import sys
-from PyQt4 import QtGui
+from PyQt5 import QtGui
 
 from rtgraph.common.architecture import Architecture
 from rtgraph.common.arguments import *
