@@ -10,7 +10,7 @@ The application uses the [mutliprocessing](https://docs.python.org/3/library/mul
 - [PyQtGraph](http://www.pyqtgraph.org/).
 
 ## Installation instructions
-### Using Anaconda or MiniConda (Windows, macOS, Linux)
+### Using Anaconda or Miniconda (Windows, macOS, Linux)
 1. Install [Anaconda](https://www.continuum.io/downloads) or [Miniconda](https://conda.io/miniconda.html). Remember to add conda to your path.
 2. Open a terminal and type:
     - `conda install pyqtgraph pyserial`
