@@ -5,6 +5,7 @@ from rtgraph.core.ringBuffer import RingBuffer
 from rtgraph.processors.Csv import CSVProcess
 from rtgraph.processors.Parser import ParserProcess
 from rtgraph.processors.Serial import SerialProcess
+from rtgraph.processors.SocketClient import SocketProcess
 from rtgraph.processors.Simulator import SimulatorProcess
 from rtgraph.common.logger import Logger as Log
 
@@ -70,6 +71,8 @@ class Worker:
             self._acquisition_process = SerialProcess(self._parser_process)
         elif self._source == SourceType.simulator:
             self._acquisition_process = SimulatorProcess(self._parser_process)
+        elif self._source == SourceType.SocketClient:
+            self._acquisition_process = SocketProcess(self._parser_process)
         if self._acquisition_process.open(port=self._port, speed=self._speed):
             self._parser_process.start()
             if self._export:
@@ -176,6 +179,8 @@ class Worker:
             return SerialProcess.get_ports()
         elif source == SourceType.simulator:
             return SimulatorProcess.get_ports()
+        elif source == SourceType.SocketClient:
+            return SocketProcess.get_default_host()
         else:
             Log.w(TAG, "Unknown source selected")
             return None
@@ -193,6 +198,8 @@ class Worker:
             return SerialProcess.get_speeds()
         elif source == SourceType.simulator:
             return SimulatorProcess.get_speeds()
+        elif source == SourceType.SocketClient:
+            return SocketProcess.get_default_port()
         else:
             Log.w(TAG, "Unknown source selected")
             return None

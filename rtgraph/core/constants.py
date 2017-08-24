@@ -1,14 +1,23 @@
 from enum import Enum
 
 
+class SourceType(Enum):
+    """
+    Enum for the types of sources. Indices MUST match app_sources constant.
+    """
+    simulator = 1
+    serial = 0
+    SocketClient = 2
+
+
 class Constants:
     """
     Common constants for the application.
     """
     app_title = "RTGraph"
-    app_version = '0.3.0'
+    app_version = '0.3.1'
     app_export_path = "data"
-    app_sources = ["Serial", "Simulator"]
+    app_sources = ["Serial", "Simulator", "Socket Client"]
     app_encoding = "utf-8"
 
     plot_update_ms = 16
@@ -23,6 +32,12 @@ class Constants:
 
     serial_default_speed = 115200
     serial_timeout_ms = 0.5
+
+    class SocketClient:
+        timeout = 0.01
+        host_default = "localhost"
+        port_default = [5555, 8080, 9090]
+        buffer_recv_size = 1024
 
     simulator_default_speed = 0.002
 
@@ -45,12 +60,4 @@ class MinimalPython:
     major = 3
     minor = 2
     release = 0
-
-
-class SourceType(Enum):
-    """
-    Enum for the types of sources. Indices MUST match app_sources constant.
-    """
-    simulator = 1
-    serial = 0
 
