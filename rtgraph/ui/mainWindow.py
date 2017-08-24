@@ -171,9 +171,12 @@ class MainWindow(QtGui.QMainWindow):
         ports = self.worker.get_source_ports(source)
         speeds = self.worker.get_source_speeds(source)
 
-        self.ui.cBox_Port.addItems(ports)
-        self.ui.cBox_Speed.addItems(speeds)
-        self.ui.cBox_Speed.setCurrentIndex(len(speeds) - 1)
+        if ports is not None:
+            self.ui.cBox_Port.addItems(ports)
+        if speeds is not None:
+            self.ui.cBox_Speed.addItems(speeds)
+        if self._get_source() == SourceType.serial:
+            self.ui.cBox_Speed.setCurrentIndex(len(speeds) - 1)
 
     def _get_source(self):
         """
