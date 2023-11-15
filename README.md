@@ -4,29 +4,30 @@ A simple Python application for plotting and storing data from a serial port in 
 The application uses the [mutliprocessing](https://docs.python.org/3/library/multiprocessing.html) package to allow better usage of the host resources, overcoming limitations such as [GIL](https://docs.python.org/3/glossary.html#term-global-interpreter-lock) in Python.  
 
 ## Dependencies
-- Python 3 (3.2 or later).
-- PyQt5.
+- Python 3 (3.10 or later).
+- PyQt6.
 - PySerial.
 - [PyQtGraph](http://www.pyqtgraph.org/).
 
 ## Installation instructions
-### Using Anaconda or Miniconda (Windows, macOS, Linux)
-1. Install [Anaconda](https://www.continuum.io/downloads) or [Miniconda](https://conda.io/miniconda.html). Remember to add conda to your path.
-2. Open a terminal and type:
-    - `conda install pyqtgraph pyserial`
-
-### Using Pip (Windows, macOS, Linux)
-1. Verify you have installed pip.
-2. Open a terminal and type:
-    - `pip install PyQt5 pyqtgraph pyserial`
-
-### Linux (Apt based distros)
-1. Open a terminal and type:
-    - `sudo apt-get install python3-pyqt5 python3-pyqtgraph python3-serial`
+TODO
 
 ## Usage
 From a terminal, on the root folder of the project, run:
-- `python -m rtgraph`
+```python3 rtgraph```
+
+## Development
+1. Setup environment and activate it using
+    ```
+    ```
+2. Install QtDesigner
+    ```
+    pip install pyqt6-tools
+    ```
+3. Run desginer
+    ```
+    venv/lib/python3.10/site-packages/qt6_applications/Qt/bin/designer
+    ```
 
 ## Links
 - [Presentation on SciPy 2015](https://www.youtube.com/watch?v=yNOJ_NfzI64&index=1&list=PLiOqvn0zxKhOy6WKGYMz3wHxJRN_zGCvD&t=896s)

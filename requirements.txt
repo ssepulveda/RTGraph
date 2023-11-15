@@ -1,0 +1,8 @@
+asyncio==3.4.3
+numpy==1.26.2
+PyQt6==6.6.0
+PyQt6-Qt6==6.6.0
+PyQt6-sip==13.6.0
+pyqtgraph==0.13.3
+pyserial==3.5
+qasync==0.26.0
