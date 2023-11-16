@@ -1,34 +1,48 @@
 import sys
-from PyQt6.QtWidgets import QMainWindow, QPushButton
+from PyQt6.QtWidgets import QMainWindow, QWidget
+from PyQt6 import uic
 
 import functools
 import asyncio
 import qasync
 from qasync import asyncSlot, asyncClose, QApplication
 
+from enum import Enum
+
+
+class States(Enum):
+    Idle = 0
+    Capturing = 1
+    Error = -1
+
 
 class MainWindow(QMainWindow):
     def __init__(self):
         super().__init__()
+        # Variables
+        self.state = States.Idle
 
-        self.setWindowTitle('RTGraph')
+        # load ui file
+        uic.loadUi('rtgraph/ui/main.ui', self)
 
-        button = QPushButton('Press Me!')
-        button.setCheckable(True)
-        button.clicked.connect(self.test)
-
-        # Set the central widget of the Window.
-        self.setCentralWidget(button)
+        # Signals
+        self.resumeButton.clicked.connect(self.resume)
 
     @asyncClose
     async def closeEvent(self, event):
         print(f'Close stuff goes here: {event}')
 
     @asyncSlot()
-    async def test(self):
-        self.setEnabled(False)
-        await asyncio.sleep(3)
-        self.setEnabled(True)
+    async def resume(self):
+        if self.state == States.Idle:
+            self.resumeButton.setText('Stop')
+            print("Start adquiring data")
+            self.state = States.Capturing
+        elif self.state == States.Capturing:
+            print("Closing stuff")
+            await asyncio.sleep(1)
+            self.resumeButton.setText('Start')
+            self.state = States.Idle
 
 
 async def main(argv):
